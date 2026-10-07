@@ -299,7 +299,7 @@
               </label>
               <label class="radio-label">
                 <input type="radio" name="conn-key-source" value="text">
-                <span>Ввести текст</span>
+                <span>Файл / Текст</span>
               </label>
             </div>
             
@@ -310,6 +310,10 @@
             </div>
             
             <div id="conn-key-text-wrapper" class="hidden">
+              <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                <button type="button" id="btn-conn-upload-key" class="btn-secondary" style="font-size: 13px;"><i class="fa-solid fa-file-upload"></i> Вибрати .pem файл</button>
+                <input type="file" id="file-conn-upload-key" accept=".pem,.key,.txt" style="display: none;">
+              </div>
               <textarea id="conn-key" rows="4" placeholder="-----BEGIN OPENSSH PRIVATE KEY-----&#10;...&#10;-----END OPENSSH PRIVATE KEY-----"></textarea>
             </div>
 
@@ -414,8 +418,8 @@
                 </select>
               </div>
               <div class="form-group flex-1">
-                <label for="setting-font-size">Розмір: <span id="font-size-val">15</span>px</label>
-                <input type="range" id="setting-font-size" min="12" max="24" value="15" step="1">
+                <label for="setting-font-size">Розмір: <span id="font-size-val">12</span>px</label>
+                <input type="range" id="setting-font-size" min="10" max="24" value="12" step="1">
               </div>
             </div>
           </div>
@@ -489,6 +493,6 @@
   <script src="/vendor/addon-web-links/lib/addon-web-links.js"></script>
 
   <!-- App Core JS -->
-  <script src="app.js?v=9"></script>
+  <script src="app.js?v=10"></script>
 </body>
 </html>

@@ -50,7 +50,7 @@ class DraculaTerminalApp {
     this.tabCounter = 0;
     this.savedConnections = [];
     this.settings = {
-      fontSize: IS_MOBILE ? 13 : 15,
+      fontSize: 12,
       fontFamily: "'JetBrains Mono'",
       aiModel: 'auto'
     };
@@ -1081,6 +1081,21 @@ class DraculaTerminalApp {
     // Add Connection button
     document.getElementById('btn-add-connection').addEventListener('click', () => {
       this.openAddConnectionModal();
+    });
+
+    document.getElementById('btn-conn-upload-key')?.addEventListener('click', () => {
+      document.getElementById('file-conn-upload-key').click();
+    });
+    
+    document.getElementById('file-conn-upload-key')?.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        document.getElementById('conn-key').value = ev.target.result;
+      };
+      reader.readAsText(file);
+      e.target.value = '';
     });
 
     document.getElementById('btn-keyring').addEventListener('click', () => {
