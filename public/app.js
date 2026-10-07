@@ -517,25 +517,25 @@ class DraculaTerminalApp {
         </div>
       `;
 
+      const doConnect = () => {
+        this.createTab({
+          type: 'ssh',
+          title: conn.name,
+          connId: conn.id
+        });
+        this.setSidebar(false);
+      };
+
       // Connect button
       card.querySelector('.btn-connect').addEventListener('click', (e) => {
         e.stopPropagation();
-        this.createTab({
-          type: 'ssh',
-          title: conn.name,
-          connId: conn.id
-        });
-        if (this.isMobile()) this.setSidebar(false);
+        doConnect();
       });
 
-      // Card double click -> connect
-      card.addEventListener('dblclick', () => {
-        this.createTab({
-          type: 'ssh',
-          title: conn.name,
-          connId: conn.id
-        });
-        if (this.isMobile()) this.setSidebar(false);
+      // Card click anywhere else (outside actions) -> connect
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('.host-actions')) return;
+        doConnect();
       });
 
       // Test button

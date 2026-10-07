@@ -418,8 +418,8 @@ input, button, select, textarea {
 .host-card, .host-item {
   background-color: rgba(40, 42, 54, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: var(--border-radius-md);
-  padding: 10px 12px;
+  border-radius: var(--border-radius-sm);
+  padding: 5px 8px;
   transition: all var(--transition-fast);
   cursor: pointer;
   display: flex;
@@ -436,13 +436,14 @@ input, button, select, textarea {
 .host-card {
   flex-direction: column;
   align-items: stretch;
+  gap: 2px;
 }
 
 .host-card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 4px;
+  margin-bottom: 0px;
 }
 
 .host-name {
@@ -456,17 +457,18 @@ input, button, select, textarea {
 
 .host-endpoint {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
+  font-size: 10px;
   color: var(--dracula-comment);
-  margin-bottom: 8px;
+  margin-bottom: 2px;
+  line-height: 1.2;
 }
 
 .host-card-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 6px;
-  padding-top: 6px;
+  margin-top: 2px;
+  padding-top: 3px;
   border-top: 1px solid rgba(255, 255, 255, 0.04);
 }
 
