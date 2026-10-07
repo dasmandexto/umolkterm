@@ -328,6 +328,67 @@ input, button, select, textarea {
   font-size: 12px;
 }
 
+.btn-danger {
+  background-color: rgba(255, 85, 85, 0.2);
+  color: var(--dracula-red);
+  border: 1px solid rgba(255, 85, 85, 0.4);
+  padding: 8px 14px;
+  border-radius: var(--border-radius-sm);
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all var(--transition-fast);
+}
+.btn-danger:hover {
+  background-color: var(--dracula-red);
+  color: #fff;
+}
+
+.snippet-card {
+  background: rgba(40, 42, 54, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.snippet-card:hover {
+  border-color: rgba(189, 147, 249, 0.3);
+  background: var(--dracula-current-line);
+}
+.snippet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.snippet-title {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--dracula-fg);
+}
+.snippet-code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--dracula-green);
+  background: rgba(0, 0, 0, 0.3);
+  padding: 4px 6px;
+  border-radius: 4px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+.snippet-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+  margin-top: 2px;
+}
+
 /* ================= WORKSPACE ================= */
 .workspace {
   display: flex;

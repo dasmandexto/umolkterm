@@ -70,6 +70,7 @@ class DraculaTerminalApp {
     this.setupEventListeners();
     await this.loadSettings();
     await this.loadKeys();
+    await this.loadSnippets();
     await this.loadConnections();
 
     // Дочекатись шрифтів, інакше xterm міряє клітинки по fallback-шрифту (і з'являються квадрати)
@@ -444,7 +445,7 @@ class DraculaTerminalApp {
       list.appendChild(el);
     });
 
-    list.querySelectorAll('.btn-delete-key').forEach(btn => {
+      list.querySelectorAll('.btn-delete-key').forEach(btn => {
       btn.addEventListener('click', async (e) => {
         if (!confirm('Видалити ключ?')) return;
         const id = e.currentTarget.getAttribute('data-id');
@@ -452,6 +453,111 @@ class DraculaTerminalApp {
         await this.loadKeys();
       });
     });
+  }
+
+  // ================= SNIPPETS CRUD =================
+  async loadSnippets() {
+    try {
+      const res = await fetch('/api/snippets');
+      const data = await res.json();
+      if (data.success) {
+        this.snippets = data.snippets || [];
+        this.renderSnippetsList();
+      }
+    } catch (e) {
+      console.error('Failed to load snippets', e);
+    }
+  }
+
+  renderSnippetsList(filter = '') {
+    const list = document.getElementById('snippets-list');
+    if (!list) return;
+    list.innerHTML = '';
+    const q = (filter || '').toLowerCase().trim();
+
+    const filtered = (this.snippets || []).filter(s => {
+      return !q || s.title.toLowerCase().includes(q) || s.command.toLowerCase().includes(q) || (s.group && s.group.toLowerCase().includes(q));
+    });
+
+    if (filtered.length === 0) {
+      list.innerHTML = `<div class="empty-state" style="padding: 1rem;"><p>Сніппетів не знайдено</p></div>`;
+      return;
+    }
+
+    filtered.forEach(s => {
+      const el = document.createElement('div');
+      el.className = 'snippet-card';
+      el.innerHTML = `
+        <div class="snippet-header">
+          <div class="snippet-title">
+            <span class="badge badge-group" style="margin-right: 4px;">${this.escapeHtml(s.group || 'Загальні')}</span>
+            <span>${this.escapeHtml(s.title)}</span>
+          </div>
+          <div class="snippet-actions">
+            <button class="host-action-btn btn-run-snippet" data-id="${s.id}" title="Виконати в поточному терміналі" style="color: var(--dracula-green);">
+              <i class="fa-solid fa-play"></i>
+            </button>
+            <button class="host-action-btn btn-insert-snippet" data-id="${s.id}" title="Вставити в термінал" style="color: var(--dracula-cyan);">
+              <i class="fa-solid fa-terminal"></i>
+            </button>
+            <button class="host-action-btn btn-delete-snippet" data-id="${s.id}" title="Видалити" style="color: var(--dracula-red);">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
+        </div>
+        <div class="snippet-code">${this.escapeHtml(s.command)}</div>
+      `;
+
+      el.querySelector('.btn-run-snippet').addEventListener('click', () => {
+        this.sendToActiveTerminal(s.command, true);
+        document.getElementById('modal-snippets').classList.add('hidden');
+      });
+
+      el.querySelector('.btn-insert-snippet').addEventListener('click', () => {
+        this.sendToActiveTerminal(s.command, false);
+        document.getElementById('modal-snippets').classList.add('hidden');
+      });
+
+      el.querySelector('.btn-delete-snippet').addEventListener('click', async () => {
+        if (!confirm(`Видалити сніппет "${s.title}"?`)) return;
+        await fetch(`/api/snippets/${s.id}`, { method: 'DELETE' });
+        await this.loadSnippets();
+      });
+
+      list.appendChild(el);
+    });
+  }
+
+  // ================= 2FA GOOGLE AUTHENTICATOR =================
+  async checkTwoFactorStatus() {
+    try {
+      const res = await fetch('/api/2fa/status');
+      const data = await res.json();
+      const badge = document.getElementById('2fa-status-badge');
+      const btnSetup = document.getElementById('btn-start-setup-2fa');
+      const btnDisable = document.getElementById('btn-open-disable-2fa');
+      const setupBox = document.getElementById('2fa-setup-box');
+      const disableBox = document.getElementById('2fa-disable-box');
+
+      setupBox.classList.add('hidden');
+      disableBox.classList.add('hidden');
+
+      if (data.enabled) {
+        badge.textContent = '✓ Google 2FA активовано';
+        badge.style.background = 'rgba(80, 250, 123, 0.2)';
+        badge.style.color = 'var(--dracula-green)';
+        btnSetup.classList.add('hidden');
+        btnDisable.classList.remove('hidden');
+      } else {
+        badge.textContent = '✗ 2FA вимкнено';
+        badge.style.background = 'rgba(255, 184, 108, 0.2)';
+        badge.style.color = 'var(--dracula-orange)';
+        btnSetup.classList.remove('hidden');
+        btnDisable.classList.add('hidden');
+      }
+    } catch (e) {
+      console.error('Failed to check 2FA status', e);
+    }
   }
 
   async loadConnections() {
@@ -1523,6 +1629,112 @@ class DraculaTerminalApp {
         document.documentElement.requestFullscreen().catch(() => {});
       } else {
         document.exitFullscreen().catch(() => {});
+      }
+    });
+
+    // Snippets Modal triggers
+    const openSnippetsModal = () => {
+      document.getElementById('modal-snippets').classList.remove('hidden');
+      this.renderSnippetsList();
+      document.getElementById('snippet-search')?.focus();
+    };
+    document.getElementById('btn-snippets')?.addEventListener('click', openSnippetsModal);
+    document.getElementById('btn-snippets-bar')?.addEventListener('click', openSnippetsModal);
+
+    // Save Snippet
+    document.getElementById('btn-save-snippet')?.addEventListener('click', async () => {
+      const title = document.getElementById('snippet-title').value.trim();
+      const group = document.getElementById('snippet-group').value.trim();
+      const command = document.getElementById('snippet-command').value.trim();
+      if (!command) {
+        alert('Введіть команду сніппета');
+        return;
+      }
+      const res = await fetch('/api/snippets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, group, command })
+      });
+      const data = await res.json();
+      if (data.success) {
+        document.getElementById('snippet-title').value = '';
+        document.getElementById('snippet-group').value = '';
+        document.getElementById('snippet-command').value = '';
+        await this.loadSnippets();
+      } else {
+        alert('Помилка: ' + data.error);
+      }
+    });
+
+    // Search Snippets
+    document.getElementById('snippet-search')?.addEventListener('input', (e) => {
+      this.renderSnippetsList(e.target.value);
+    });
+
+    // 2FA Handlers
+    document.getElementById('btn-settings')?.addEventListener('click', () => {
+      this.checkTwoFactorStatus();
+    });
+
+    document.getElementById('btn-start-setup-2fa')?.addEventListener('click', async () => {
+      const res = await fetch('/api/2fa/setup', { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        document.getElementById('2fa-qr-img').src = data.qrDataUrl;
+        document.getElementById('2fa-secret-text').textContent = 'Секретний ключ: ' + data.secret;
+        document.getElementById('2fa-setup-box').classList.remove('hidden');
+        document.getElementById('2fa-verify-code').value = '';
+        document.getElementById('2fa-verify-code').focus();
+      } else {
+        alert('Помилка генерації 2FA: ' + data.error);
+      }
+    });
+
+    document.getElementById('btn-confirm-enable-2fa')?.addEventListener('click', async () => {
+      const code = document.getElementById('2fa-verify-code').value.trim();
+      if (!code || code.length !== 6) {
+        alert('Введіть 6-значний код з Google Authenticator');
+        return;
+      }
+      const res = await fetch('/api/2fa/enable', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(data.message);
+        await this.checkTwoFactorStatus();
+      } else {
+        alert('Помилка: ' + data.error);
+      }
+    });
+
+    document.getElementById('btn-open-disable-2fa')?.addEventListener('click', () => {
+      document.getElementById('2fa-disable-box').classList.toggle('hidden');
+      document.getElementById('2fa-disable-password').focus();
+    });
+
+    document.getElementById('btn-confirm-disable-2fa')?.addEventListener('click', async () => {
+      const password = document.getElementById('2fa-disable-password').value;
+      const code = document.getElementById('2fa-disable-code').value.trim();
+      if (!password || !code) {
+        alert('Введіть пароль і код 2FA');
+        return;
+      }
+      const res = await fetch('/api/2fa/disable', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password, code })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(data.message);
+        document.getElementById('2fa-disable-password').value = '';
+        document.getElementById('2fa-disable-code').value = '';
+        await this.checkTwoFactorStatus();
+      } else {
+        alert('Помилка: ' + data.error);
       }
     });
 

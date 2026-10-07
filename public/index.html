@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="/vendor/xterm/css/xterm.css">
   
   <!-- Custom Dracula Theme CSS -->
-  <link rel="stylesheet" href="style.css?v=13">
+  <link rel="stylesheet" href="style.css?v=15">
 </head>
 <body class="theme-umolk">
   <div id="app" class="app-layout">
@@ -95,6 +95,9 @@
             <span>SSH Сервери</span>
           </div>
           <div class="sidebar-actions" style="display: flex; gap: 0.25rem;">
+            <button id="btn-snippets" class="btn-sm btn-secondary" title="Сніппети команд">
+              <i class="fa-solid fa-code"></i>
+            </button>
             <button id="btn-keyring" class="btn-sm btn-secondary" title="Зв'язка ключів">
               <i class="fa-solid fa-key"></i>
             </button>
@@ -160,6 +163,9 @@
           </button>
           <button id="btn-mic-bar" class="mic-btn" style="background: rgba(139, 233, 253, 0.15); color: var(--dracula-cyan); border-color: rgba(139, 233, 253, 0.3);" title="Голосове введення (Whisper)">
             <i class="fa-solid fa-microphone"></i>
+          </button>
+          <button id="btn-snippets-bar" style="background: rgba(189, 147, 249, 0.15); color: var(--dracula-purple); border-color: rgba(189, 147, 249, 0.3);" title="Сніппети команд">
+            <i class="fa-solid fa-code"></i>
           </button>
           <button data-key="esc">Esc</button>
           <button data-key="tab">Tab</button>
@@ -401,6 +407,37 @@
       </div>
     </div>
 
+    <!-- SNIPPETS MODAL -->
+    <div id="modal-snippets" class="modal-backdrop hidden">
+      <div class="modal-dialog">
+        <div class="modal-header">
+          <h3><i class="fa-solid fa-code text-purple"></i> Сніппети команд</h3>
+          <button class="icon-btn modal-close" data-modal="modal-snippets"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+          <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.05);">
+            <div style="font-weight: 600; font-size: 13px; margin-bottom: 8px; color: var(--dracula-fg);">Новий сніппет</div>
+            <div class="form-row" style="margin-bottom: 8px;">
+              <input type="text" id="snippet-title" placeholder="Назва (напр., Оновити сервер)" style="flex: 2;">
+              <input type="text" id="snippet-group" placeholder="Група (напр., Docker, Maintenance)" style="flex: 1;">
+            </div>
+            <textarea id="snippet-command" rows="2" placeholder="Команда (напр., sudo apt update &amp;&amp; sudo apt upgrade -y)" style="font-family: 'JetBrains Mono', monospace; font-size: 12px;"></textarea>
+            <button class="btn-primary" id="btn-save-snippet" style="width: 100%; margin-top: 8px;">
+              <i class="fa-solid fa-plus"></i> Додати сніппет
+            </button>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 8px;">
+            <input type="text" id="snippet-search" placeholder="Пошук по сніппетах..." autocomplete="off">
+          </div>
+
+          <div id="snippets-list" class="hosts-container" style="max-height: 320px; overflow-y: auto;">
+            <!-- Snippets will be dynamically injected here -->
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- SETTINGS MODAL -->
     <div id="modal-settings" class="modal-backdrop hidden">
       <div class="modal-dialog">
@@ -480,6 +517,39 @@
             </div>
           </div>
 
+          <div class="settings-section">
+            <h4 class="settings-subtitle"><i class="fa-solid fa-shield-halved text-green"></i> Безпека: Google Authenticator (2FA)</h4>
+            <div id="2fa-status-view" style="margin-bottom: 8px;">
+              <span id="2fa-status-badge" class="badge" style="font-size: 12px; padding: 4px 8px;">Перевірка статусу...</span>
+            </div>
+            
+            <div id="2fa-setup-box" class="hidden" style="background: rgba(0,0,0,0.25); padding: 12px; border-radius: 8px; border: 1px solid rgba(80,250,123,0.3); margin-bottom: 10px;">
+              <p style="font-size: 12px; margin-bottom: 8px;">Відскануйте QR-код у додатку Google Authenticator (або введіть ключ вручну):</p>
+              <div style="text-align: center; margin: 10px 0;">
+                <img id="2fa-qr-img" src="" alt="2FA QR Code" style="max-width: 170px; border-radius: 8px; background: white; padding: 6px;">
+              </div>
+              <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; text-align: center; color: var(--dracula-cyan); margin-bottom: 8px;" id="2fa-secret-text"></div>
+              <div class="form-row" style="margin-top: 8px;">
+                <input type="text" id="2fa-verify-code" placeholder="6 цифр з додатка" maxlength="6" inputmode="numeric" style="letter-spacing: 3px; text-align: center;">
+                <button type="button" id="btn-confirm-enable-2fa" class="btn-primary" style="white-space: nowrap;"><i class="fa-solid fa-check"></i> Підтвердити</button>
+              </div>
+            </div>
+
+            <div id="2fa-disable-box" class="hidden" style="background: rgba(0,0,0,0.25); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,85,85,0.3); margin-bottom: 10px;">
+              <p style="font-size: 12px; margin-bottom: 8px; color: var(--dracula-red);">Для вимкнення 2FA введіть поточний пароль та код з Authenticator:</p>
+              <div class="form-row" style="margin-bottom: 8px;">
+                <input type="password" id="2fa-disable-password" placeholder="Пароль">
+                <input type="text" id="2fa-disable-code" placeholder="6 цифр" maxlength="6" inputmode="numeric">
+              </div>
+              <button type="button" id="btn-confirm-disable-2fa" class="btn-danger" style="width: 100%;"><i class="fa-solid fa-ban"></i> Вимкнути 2FA</button>
+            </div>
+
+            <div style="display: flex; gap: 8px;">
+              <button type="button" id="btn-start-setup-2fa" class="btn-secondary" style="font-size: 12px;"><i class="fa-solid fa-qrcode"></i> Налаштувати 2FA</button>
+              <button type="button" id="btn-open-disable-2fa" class="btn-secondary hidden" style="font-size: 12px; color: var(--dracula-red);"><i class="fa-solid fa-lock-open"></i> Вимкнути</button>
+            </div>
+          </div>
+
           <div class="modal-footer">
             <button type="button" class="btn-secondary modal-close" data-modal="modal-settings">Закрити</button>
             <button type="button" id="btn-save-settings" class="btn-primary"><i class="fa-solid fa-check"></i> Зберегти налаштування</button>
@@ -496,6 +566,6 @@
   <script src="/vendor/addon-web-links/lib/addon-web-links.js"></script>
 
   <!-- App Core JS -->
-  <script src="app.js?v=14"></script>
+  <script src="app.js?v=15"></script>
 </body>
 </html>

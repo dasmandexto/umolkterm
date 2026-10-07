@@ -7,6 +7,8 @@ const WebSocket = require('ws');
 const pty = require('node-pty');
 const { Client } = require('ssh2');
 const { v4: uuidv4 } = require('uuid');
+const { authenticator } = require('otplib');
+const QRCode = require('qrcode');
 
 const app = express();
 
@@ -48,6 +50,7 @@ const DATA_DIR = path.join(__dirname, 'data');
 const CONNECTIONS_FILE = path.join(DATA_DIR, 'connections.json');
 const KEYS_FILE = path.join(DATA_DIR, 'keys.json');
 const SETTINGS_FILE = path.join(DATA_DIR, 'settings.json');
+const SNIPPETS_FILE = path.join(DATA_DIR, 'snippets.json');
 const AUTH_FILE = path.join(DATA_DIR, 'auth.json');
 const SECRET_FILE = path.join(DATA_DIR, 'secret.key');
 const SESSION_TTL_MS = 30 * 24 * 3600 * 1000;
@@ -62,6 +65,19 @@ function writeSecure(file, content) {
 }
 
 if (!fs.existsSync(CONNECTIONS_FILE)) writeSecure(CONNECTIONS_FILE, '[]');
+if (!fs.existsSync(SNIPPETS_FILE)) writeSecure(SNIPPETS_FILE, '[]');
+
+function getSnippets() {
+  try {
+    return JSON.parse(fs.readFileSync(SNIPPETS_FILE, 'utf8'));
+  } catch (err) {
+    return [];
+  }
+}
+
+function saveSnippets(snippets) {
+  writeSecure(SNIPPETS_FILE, JSON.stringify(snippets, null, 2));
+}
 
 // ---------- AUTH ----------
 function hashPassword(pw, salt) {
@@ -88,12 +104,40 @@ if (process.env.UMOLK_PASSWORD) {
 if (!fs.existsSync(SECRET_FILE)) writeSecure(SECRET_FILE, crypto.randomBytes(32).toString('hex'));
 const SECRET = fs.readFileSync(SECRET_FILE, 'utf8').trim();
 
+function getAuthData() {
+  try {
+    return JSON.parse(fs.readFileSync(AUTH_FILE, 'utf8'));
+  } catch (e) {
+    return {};
+  }
+}
+
+function saveAuthData(data) {
+  writeSecure(AUTH_FILE, JSON.stringify(data, null, 2));
+}
+
 function checkPassword(pw) {
   try {
-    const { salt, hash } = JSON.parse(fs.readFileSync(AUTH_FILE, 'utf8'));
+    const { salt, hash } = getAuthData();
+    if (!salt || !hash) return false;
     const a = Buffer.from(hashPassword(String(pw || ''), salt), 'hex');
     return crypto.timingSafeEqual(a, Buffer.from(hash, 'hex'));
   } catch (e) { return false; }
+}
+
+function isTwoFactorEnabled() {
+  const auth = getAuthData();
+  return Boolean(auth.totpSecret && auth.totpEnabled);
+}
+
+function verifyTwoFactor(token) {
+  const auth = getAuthData();
+  if (!auth.totpSecret) return false;
+  try {
+    return authenticator.check(String(token || '').trim(), auth.totpSecret);
+  } catch (e) {
+    return false;
+  }
 }
 
 function signToken(exp) {
@@ -216,15 +260,34 @@ app.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, 'public/login.html'));
 });
 
+app.get('/api/auth/status', (req, res) => {
+  res.json({
+    success: true,
+    twoFactorEnabled: isTwoFactorEnabled()
+  });
+});
+
 app.post('/api/login', (req, res) => {
   const ip = req.ip;
   if (rateLimited(ip)) {
     return res.status(429).json({ success: false, error: 'Забагато спроб. Спробуйте через 5 хвилин.' });
   }
-  if (!checkPassword(req.body && req.body.password)) {
+  const { password, twoFactorCode } = req.body || {};
+  if (!checkPassword(password)) {
     registerFail(ip);
     return res.status(401).json({ success: false, error: 'Невірний пароль' });
   }
+
+  if (isTwoFactorEnabled()) {
+    if (!twoFactorCode) {
+      return res.json({ success: false, requireTwoFactor: true });
+    }
+    if (!verifyTwoFactor(twoFactorCode)) {
+      registerFail(ip);
+      return res.status(401).json({ success: false, requireTwoFactor: true, error: 'Невірний 2FA код Google Authenticator' });
+    }
+  }
+
   loginFails.delete(ip);
   const token = signToken(Date.now() + SESSION_TTL_MS);
   res.setHeader('Set-Cookie',
@@ -399,6 +462,114 @@ app.delete('/api/keys/:id', (req, res) => {
   res.json({ success: true, message: 'Видалено успішно' });
 });
 
+// ---------- SNIPPETS API ----------
+app.get('/api/snippets', (req, res) => {
+  res.json({ success: true, snippets: getSnippets() });
+});
+
+app.post('/api/snippets', (req, res) => {
+  const { title, command, group } = req.body || {};
+  if (!command) return res.status(400).json({ success: false, error: 'Команда обов\'язкова' });
+  const snippets = getSnippets();
+  const newSnippet = {
+    id: uuidv4(),
+    title: (title || '').trim() || command.trim().slice(0, 30),
+    command: command.trim(),
+    group: (group || '').trim() || 'Загальні',
+    createdAt: new Date().toISOString()
+  };
+  snippets.push(newSnippet);
+  saveSnippets(snippets);
+  res.json({ success: true, snippet: newSnippet });
+});
+
+app.put('/api/snippets/:id', (req, res) => {
+  const id = req.params.id;
+  const snippets = getSnippets();
+  const idx = snippets.findIndex(s => s.id === id);
+  if (idx === -1) return res.status(404).json({ success: false, error: 'Сніппет не знайдено' });
+  const { title, command, group } = req.body || {};
+  snippets[idx] = {
+    ...snippets[idx],
+    title: title !== undefined ? title.trim() : snippets[idx].title,
+    command: command !== undefined ? command.trim() : snippets[idx].command,
+    group: group !== undefined ? group.trim() : snippets[idx].group,
+    updatedAt: new Date().toISOString()
+  };
+  saveSnippets(snippets);
+  res.json({ success: true, snippet: snippets[idx] });
+});
+
+app.delete('/api/snippets/:id', (req, res) => {
+  const id = req.params.id;
+  let snippets = getSnippets();
+  const initLen = snippets.length;
+  snippets = snippets.filter(s => s.id !== id);
+  if (snippets.length === initLen) return res.status(404).json({ success: false, error: 'Сніппет не знайдено' });
+  saveSnippets(snippets);
+  res.json({ success: true, message: 'Сніппет видалено' });
+});
+
+// ---------- 2FA GOOGLE AUTHENTICATOR API ----------
+app.get('/api/2fa/status', (req, res) => {
+  res.json({
+    success: true,
+    enabled: isTwoFactorEnabled()
+  });
+});
+
+app.post('/api/2fa/setup', async (req, res) => {
+  try {
+    const auth = getAuthData();
+    const secret = authenticator.generateSecret();
+    auth.totpPendingSecret = secret;
+    saveAuthData(auth);
+
+    const otpauth = authenticator.keyuri('UmolkTerm', 'UmolkTerm Admin', secret);
+    const qrDataUrl = await QRCode.toDataURL(otpauth);
+    res.json({
+      success: true,
+      secret,
+      qrDataUrl
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post('/api/2fa/enable', (req, res) => {
+  const { code } = req.body || {};
+  const auth = getAuthData();
+  if (!auth.totpPendingSecret) {
+    return res.status(400).json({ success: false, error: 'Спочатку ініціалізуйте налаштування 2FA' });
+  }
+  const isValid = authenticator.check(String(code || '').trim(), auth.totpPendingSecret);
+  if (!isValid) {
+    return res.status(400).json({ success: false, error: 'Невірний 6-значний код Google Authenticator' });
+  }
+  auth.totpSecret = auth.totpPendingSecret;
+  auth.totpEnabled = true;
+  delete auth.totpPendingSecret;
+  saveAuthData(auth);
+  res.json({ success: true, message: 'Google 2FA успішно активовано!' });
+});
+
+app.post('/api/2fa/disable', (req, res) => {
+  const { password, code } = req.body || {};
+  if (!checkPassword(password)) {
+    return res.status(401).json({ success: false, error: 'Невірний пароль для підтвердження' });
+  }
+  if (!verifyTwoFactor(code)) {
+    return res.status(400).json({ success: false, error: 'Невірний код 2FA для відключення' });
+  }
+  const auth = getAuthData();
+  delete auth.totpSecret;
+  delete auth.totpEnabled;
+  delete auth.totpPendingSecret;
+  saveAuthData(auth);
+  res.json({ success: true, message: '2FA успішно вимкнено' });
+});
+
 // Test SSH connection
 app.post('/api/connections/test', (req, res) => {
   let { host, port, username, authType, password, privateKey, keyId, passphrase, id } = req.body;
@@ -494,12 +665,13 @@ app.get('/api/export', (req, res) => {
   res.json({
     success: true,
     connections: getConnections(),
-    keys: getKeys()
+    keys: getKeys(),
+    snippets: getSnippets()
   });
 });
 
 app.post('/api/import', (req, res) => {
-  const { connections, keys } = req.body;
+  const { connections, keys, snippets } = req.body;
   
   if (Array.isArray(keys)) {
     const existing = getKeys();
@@ -519,6 +691,16 @@ app.post('/api/import', (req, res) => {
       else existing.push(c);
     });
     saveConnections(existing);
+  }
+
+  if (Array.isArray(snippets)) {
+    const existing = getSnippets();
+    snippets.forEach(s => {
+      const idx = existing.findIndex(e => e.id === s.id);
+      if (idx > -1) existing[idx] = s;
+      else existing.push(s);
+    });
+    saveSnippets(existing);
   }
   
   res.json({ success: true });

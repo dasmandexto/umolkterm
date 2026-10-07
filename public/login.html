@@ -15,27 +15,49 @@
     <form id="form" autocomplete="on">
       <input type="text" name="username" value="umolk" autocomplete="username" hidden>
       <input id="pw" type="password" name="password" placeholder="Пароль" autocomplete="current-password" autofocus required>
-      <button type="submit" id="btn">Увійти</button>
+      <div id="totp-group" style="display: none; margin-top: 10px;">
+        <input id="totp" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="Код Google Authenticator (6 цифр)" autocomplete="one-time-code" style="letter-spacing: 4px; text-align: center; font-size: 16px;">
+      </div>
+      <button type="submit" id="btn" style="margin-top: 12px;">Увійти</button>
       <div id="err" class="err"></div>
     </form>
   </main>
   <script>
     const form = document.getElementById('form');
     const err = document.getElementById('err');
+    const totpGroup = document.getElementById('totp-group');
+    const totpInput = document.getElementById('totp');
+    const pwInput = document.getElementById('pw');
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       err.textContent = '';
       const btn = document.getElementById('btn');
       btn.disabled = true;
       try {
+        const payload = {
+          password: pwInput.value
+        };
+        if (totpGroup.style.display !== 'none' && totpInput.value) {
+          payload.twoFactorCode = totpInput.value.trim();
+        }
+
         const res = await fetch('/api/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ password: document.getElementById('pw').value })
+          body: JSON.stringify(payload)
         });
         const d = await res.json();
-        if (d.success) location.href = '/';
-        else err.textContent = d.error || 'Помилка входу';
+        if (d.success) {
+          location.href = '/';
+        } else if (d.requireTwoFactor) {
+          totpGroup.style.display = 'block';
+          totpInput.required = true;
+          totpInput.focus();
+          err.textContent = d.error || 'Введіть 6-значний код з додатку Google Authenticator';
+        } else {
+          err.textContent = d.error || 'Помилка входу';
+        }
       } catch (x) {
         err.textContent = 'Помилка мережі';
       } finally {
