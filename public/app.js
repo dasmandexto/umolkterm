@@ -1380,6 +1380,7 @@ class DraculaTerminalApp {
       document.getElementById('setting-gemini-key').value = '';
       this.applySettings();
       alert('Налаштування збережено');
+      document.getElementById('modal-settings').classList.add('hidden');
     });
 
     document.getElementById('btn-apply-whisper')?.addEventListener('click', async () => {
@@ -1400,8 +1401,6 @@ class DraculaTerminalApp {
       } catch (e) { alert('Помилка мережі'); }
       btn.innerHTML = ogHtml;
       btn.disabled = false;
-    });
-      document.getElementById('modal-settings').classList.add('hidden');
     });
 
     // Fullscreen toggle
