@@ -1078,6 +1078,7 @@ input, button, select, textarea {
     -webkit-backdrop-filter: blur(8px);
     border-left: 1px solid rgba(255,255,255,0.08);
     z-index: 20;
+    overflow: visible;
   }
   .tabs-list {
     flex-direction: column;
@@ -1111,6 +1112,13 @@ input, button, select, textarea {
     display: flex;
     justify-content: center;
     padding-bottom: 8px;
+  }
+  .tab-dropdown-container .dropdown-menu {
+    left: auto;
+    right: 100%;
+    top: auto;
+    bottom: 0;
+    margin-right: 14px;
   }
   .main-content { padding-right: 52px; }
 
