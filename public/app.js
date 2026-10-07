@@ -143,6 +143,11 @@ class DraculaTerminalApp {
           btn.classList.toggle('on');
         } else if (key === 'paste') {
           try { this.sendRaw(await navigator.clipboard.readText()); } catch (e) {}
+        } else if (key === 'paste-run') {
+          try { 
+            const text = await navigator.clipboard.readText();
+            this.sendRaw(text + '\r');
+          } catch (e) {}
         } else if (key) {
           this.sendRaw(KEYS[key]);
         } else if (btn.dataset.seq) {
@@ -1009,6 +1014,19 @@ class DraculaTerminalApp {
     });
 
     document.getElementById('sidebar-backdrop').addEventListener('click', () => this.setSidebar(false));
+    
+    // Swipe to close sidebars on mobile
+    let touchStartX = 0;
+    const sidebar = document.getElementById('sidebar');
+    sidebar.addEventListener('touchstart', e => touchStartX = e.changedTouches[0].screenX, {passive: true});
+    sidebar.addEventListener('touchend', e => {
+      if (touchStartX - e.changedTouches[0].screenX > 50) this.setSidebar(false); // Swiped left
+    });
+    this.aiDrawer.addEventListener('touchstart', e => touchStartX = e.changedTouches[0].screenX, {passive: true});
+    this.aiDrawer.addEventListener('touchend', e => {
+      if (e.changedTouches[0].screenX - touchStartX > 50) this.aiDrawer.classList.add('hidden'); // Swiped right
+    });
+
     document.getElementById('btn-logout').addEventListener('click', async () => {
       await fetch('/api/logout', { method: 'POST' });
       location.href = '/login';

@@ -1018,8 +1018,8 @@ input, button, select, textarea {
 /* ================= MOBILE KEY BAR ================= */
 .key-bar {
   display: none;
-  gap: 6px;
-  padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+  gap: 3px;
+  padding: 4px 4px calc(4px + env(safe-area-inset-bottom));
   background: var(--dracula-bg-darker);
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   overflow-x: auto;
@@ -1029,14 +1029,14 @@ input, button, select, textarea {
 .key-bar::-webkit-scrollbar { display: none; }
 .key-bar button {
   flex: 0 0 auto;
-  min-width: 42px;
-  height: 36px;
-  padding: 0 12px;
+  min-width: 34px;
+  height: 32px;
+  padding: 0 6px;
   background: var(--dracula-current-line);
   color: var(--dracula-fg);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  font-size: 13px;
+  border-radius: 6px;
+  font-size: 12px;
   font-family: 'JetBrains Mono', monospace;
   touch-action: manipulation;
 }
