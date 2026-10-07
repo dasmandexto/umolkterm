@@ -74,11 +74,11 @@ class DraculaTerminalApp {
 
     // Дочекатись шрифтів, інакше xterm міряє клітинки по fallback-шрифту (і з'являються квадрати)
     try {
+      await document.fonts.ready;
       await Promise.all([
         document.fonts.load("400 15px 'JetBrains Mono'"),
         document.fonts.load("700 15px 'JetBrains Mono'"),
-        document.fonts.load("400 15px 'JetBrains Mono'", 'Привіт'),
-        document.fonts.load("15px 'UmolkSymbols'", '\ue0b0\uf015')
+        document.fonts.load("15px 'UmolkSymbols'")
       ]);
     } catch (e) {}
 

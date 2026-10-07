@@ -1,7 +1,7 @@
 # UmolkTerm — повний prompt (Dracula palette), широкі екрани
 format = """
 [░▒▓](#bd93f9)\
-[ 󰌽 $os ](bg:#bd93f9 fg:#282a36)\
+[ 🦇 $os ](bg:#bd93f9 fg:#282a36)\
 [](bg:#ff79c6 fg:#bd93f9)\
 [ $directory ](bg:#ff79c6 fg:#282a36 bold)\
 [](bg:#50fa7b fg:#ff79c6)\
