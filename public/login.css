@@ -1,0 +1,40 @@
+@font-face { font-family: 'JetBrains Mono'; font-weight: 400; src: url('/fonts/jetbrains-mono-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'JetBrains Mono'; font-weight: 700; src: url('/fonts/jetbrains-mono-latin-700-normal.woff2') format('woff2'); }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  background: radial-gradient(1200px 600px at 50% -10%, #3a2d63 0%, #282a36 55%, #1e1f29 100%);
+  color: #f8f8f2;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.card {
+  width: 100%; max-width: 360px;
+  background: rgba(33, 34, 44, 0.85);
+  border: 1px solid rgba(189, 147, 249, 0.25);
+  border-radius: 18px;
+  padding: 32px 26px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55), 0 0 40px rgba(189, 147, 249, 0.12);
+  backdrop-filter: blur(8px);
+}
+.logo { font-size: 44px; margin-bottom: 6px; }
+h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
+h1 span { color: #bd93f9; }
+.sub { color: #6272a4; font-size: 13px; margin: 6px 0 22px; }
+input {
+  width: 100%; padding: 13px 14px; margin-bottom: 12px;
+  background: #282a36; color: #f8f8f2;
+  border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 10px;
+  font: inherit; font-size: 16px; outline: none;
+}
+input:focus { border-color: #bd93f9; box-shadow: 0 0 0 3px rgba(189, 147, 249, 0.2); }
+button {
+  width: 100%; padding: 13px; border: 0; border-radius: 10px;
+  background: #bd93f9; color: #282a36; font: inherit; font-weight: 700; font-size: 15px; cursor: pointer;
+}
+button:hover { background: #d6acff; }
+button:disabled { opacity: 0.6; }
+.err { min-height: 18px; margin-top: 12px; color: #ff5555; font-size: 12px; }

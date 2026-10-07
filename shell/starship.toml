@@ -1,0 +1,85 @@
+# UmolkTerm — повний prompt (Dracula palette), широкі екрани
+format = """
+[░▒▓](#bd93f9)\
+[ 󰌽 $os ](bg:#bd93f9 fg:#282a36)\
+[](bg:#ff79c6 fg:#bd93f9)\
+[ $directory ](bg:#ff79c6 fg:#282a36 bold)\
+[](bg:#50fa7b fg:#ff79c6)\
+[ $git_branch$git_status ](bg:#50fa7b fg:#282a36)\
+[](bg:#ffb86c fg:#50fa7b)\
+[ $nodejs$python$golang$rust ](bg:#ffb86c fg:#282a36)\
+[](bg:#6272a4 fg:#ffb86c)\
+[ $time ](bg:#6272a4 fg:#f8f8f2)\
+[ ](fg:#6272a4)\
+$line_break$character"""
+
+# Timeout
+command_timeout = 1000
+add_newline = true
+
+[os]
+disabled = false
+style = "bg:#bd93f9 fg:#282a36"
+
+[os.symbols]
+Linux = "🐧"
+Macos = "🍎"
+Windows = "🪟"
+Ubuntu = ""
+Debian = ""
+
+[directory]
+style = "bg:#ff79c6 fg:#282a36 bold"
+format = "[$path]($style)"
+truncation_length = 3
+truncation_symbol = "…/"
+
+[directory.substitutions]
+"Documents" = "󰈙 "
+"Downloads" = " "
+"Music" = " "
+"Pictures" = " "
+
+[git_branch]
+style = "bg:#50fa7b fg:#282a36"
+symbol = ""
+format = '[[ $symbol $branch ](bg:#50fa7b fg:#282a36)]($style)'
+
+[git_status]
+style = "bg:#50fa7b fg:#282a36"
+format = '[[($all_status$ahead_behind )](bg:#50fa7b fg:#282a36)]($style)'
+
+[nodejs]
+style = "bg:#ffb86c fg:#282a36"
+symbol = ""
+format = '[[ $symbol ($version) ](bg:#ffb86c fg:#282a36)]($style)'
+
+[python]
+style = "bg:#ffb86c fg:#282a36"
+symbol = ""
+format = '[[ $symbol ($version) ](bg:#ffb86c fg:#282a36)]($style)'
+
+[golang]
+style = "bg:#ffb86c fg:#282a36"
+symbol = ""
+format = '[[ $symbol ($version) ](bg:#ffb86c fg:#282a36)]($style)'
+
+[rust]
+style = "bg:#ffb86c fg:#282a36"
+symbol = ""
+format = '[[ $symbol ($version) ](bg:#ffb86c fg:#282a36)]($style)'
+
+[time]
+disabled = false
+time_format = "%R"
+style = "bg:#6272a4 fg:#f8f8f2"
+format = '[[  $time ](bg:#6272a4 fg:#f8f8f2)]($style)'
+
+[character]
+disabled = false
+success_symbol = '[❯](bold #50fa7b)'
+error_symbol = '[❯](bold #ff5555)'
+vimcmd_symbol = '[❮](bold #bd93f9)'
+vimcmd_replace_one_symbol = '[❮](bold #ffb86c)'
+vimcmd_replace_symbol = '[❮](bold #ffb86c)'
+vimcmd_visual_symbol = '[❮](bold #ff79c6)'

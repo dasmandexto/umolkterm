@@ -1,0 +1,26 @@
+# UmolkTerm — компактний prompt для вузьких екранів (телефон)
+format = """
+[ $directory ](bg:#ff79c6 fg:#282a36 bold)\
+[](bg:#50fa7b fg:#ff79c6)\
+[ $git_branch ](bg:#50fa7b fg:#282a36)\
+[ ](fg:#50fa7b)
+$character"""
+
+command_timeout = 1000
+add_newline = false
+
+[directory]
+truncation_length = 1
+truncation_symbol = "…/"
+format = "[$path]($style)"
+style = "bg:#ff79c6 fg:#282a36 bold"
+
+[git_branch]
+symbol = ""
+format = '[$symbol $branch]($style)'
+style = "bg:#50fa7b fg:#282a36"
+truncation_length = 14
+
+[character]
+success_symbol = '[❯](bold #50fa7b)'
+error_symbol = '[❯](bold #ff5555)'

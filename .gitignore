@@ -1,0 +1,6 @@
+node_modules/
+data/
+whisper/venv/
+.env
+__pycache__/
+whisper/models/

@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+  <meta name="theme-color" content="#1e1f29">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>UmolkTerm — ZSH & SSH</title>
+  
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- XTerm CSS -->
+  <link rel="stylesheet" href="/vendor/xterm/css/xterm.css">
+  
+  <!-- Custom Dracula Theme CSS -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="theme-umolk">
+  <div id="app" class="app-layout">
+    
+    <!-- TOP HEADER / TAB BAR -->
+    <header class="app-header">
+      <div class="header-left">
+        <button id="btn-toggle-sidebar" class="icon-btn" title="Показати/приховати панель SSH">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <div class="brand">
+          <span class="brand-icon">🦇</span>
+          <span class="brand-title">Umolk<span class="brand-accent">Term</span></span>
+          <span class="brand-badge">zsh</span>
+        </div>
+      </div>
+
+      <!-- TABS CONTAINER -->
+      <div class="tabs-wrapper">
+        <div id="tabs-list" class="tabs-list">
+          <!-- Dynamic tabs injected here -->
+        </div>
+        <div class="tab-dropdown-container">
+          <button id="btn-new-tab" class="icon-btn btn-add-tab" title="Нова вкладка">
+            <i class="fa-solid fa-plus"></i>
+          </button>
+          <div id="new-tab-menu" class="dropdown-menu hidden">
+            <button class="dropdown-item" id="menu-new-local">
+              <i class="fa-solid fa-terminal text-purple"></i>
+              <span>Локальний ZSH</span>
+            </button>
+            <div class="dropdown-divider"></div>
+            <div class="dropdown-header">Швидке SSH підключення:</div>
+            <div id="menu-ssh-list">
+              <!-- Dynamically filled with saved connections -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HEADER ACTIONS -->
+      <div class="header-actions">
+        <button id="btn-quick-connect" class="action-btn" title="Швидке SSH підключення">
+          <i class="fa-solid fa-bolt"></i>
+          <span class="btn-label">Швидкий SSH</span>
+        </button>
+        <button id="btn-mic" class="action-btn mic-btn" title="Голосова команда">
+          <i class="fa-solid fa-microphone"></i>
+        </button>
+        <button id="btn-ai-toggle" class="action-btn ai-btn" title="AI Terminal Copilot">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          <span class="btn-label">ШІ</span>
+        </button>
+        <button id="btn-settings" class="icon-btn" title="Налаштування">
+          <i class="fa-solid fa-gear"></i>
+        </button>
+        <button id="btn-fullscreen" class="icon-btn hide-mobile" title="На весь екран">
+          <i class="fa-solid fa-expand"></i>
+        </button>
+        <button id="btn-logout" class="icon-btn" title="Вийти">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- MAIN WORKSPACE -->
+    <div class="workspace">
+      
+      <div id="sidebar-backdrop" class="sidebar-backdrop hidden"></div>
+
+      <!-- LEFT SIDEBAR: SSH CONNECTIONS MANAGER -->
+      <aside id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+          <div class="sidebar-title">
+            <i class="fa-solid fa-server text-cyan"></i>
+            <span>SSH Сервери</span>
+          </div>
+          <div class="sidebar-actions" style="display: flex; gap: 0.25rem;">
+            <button id="btn-keyring" class="btn-sm btn-secondary" title="Зв'язка ключів">
+              <i class="fa-solid fa-key"></i>
+            </button>
+            <button id="btn-add-connection" class="btn-sm btn-primary" title="Додати нове підключення">
+              <i class="fa-solid fa-plus"></i> Додати
+            </button>
+          </div>
+        </div>
+
+        <!-- SEARCH / FILTER -->
+        <div class="sidebar-search">
+          <i class="fa-solid fa-magnifying-glass search-icon"></i>
+          <input type="text" id="input-search-hosts" placeholder="Пошук хостів, IP або груп..." autocomplete="off">
+        </div>
+
+        <!-- HOSTS LIST -->
+        <div id="hosts-container" class="hosts-container">
+          <!-- Dynamically populated servers list -->
+          <div class="empty-state" id="hosts-empty-msg">
+            <i class="fa-solid fa-circle-nodes"></i>
+            <p>Завантаження серверів...</p>
+          </div>
+        </div>
+
+        <!-- SIDEBAR FOOTER: SYSTEM INFO -->
+        <div class="sidebar-footer">
+          <div class="sys-info-row">
+            <span class="info-label"><i class="fa-solid fa-microchip"></i> Shell:</span>
+            <span class="info-val text-green">Zsh 5.9 (Starship)</span>
+          </div>
+          <div class="sys-info-row">
+            <span class="info-label"><i class="fa-solid fa-palette"></i> Тема:</span>
+            <span class="info-val text-purple">Dracula</span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- TERMINALS DISPLAY AREA -->
+      <main class="terminal-stage">
+        <div id="terminals-container" class="terminals-container">
+          <!-- Terminal instances are mounted here -->
+        </div>
+        <div id="voice-panel" class="voice-panel hidden">
+          <div class="voice-head">
+            <span id="voice-state" class="voice-state"></span>
+            <button id="voice-close" class="icon-btn" title="Закрити"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+          <div id="voice-transcript" class="voice-transcript"></div>
+          <div id="voice-result" class="voice-result hidden">
+            <div id="voice-explain" class="voice-explain"></div>
+            <div id="voice-warning" class="voice-warning hidden"></div>
+            <div id="voice-cmd" class="ai-command-text"></div>
+            <div class="voice-actions">
+              <button id="voice-run" class="btn-primary"><i class="fa-solid fa-bolt"></i> Виконати</button>
+              <button id="voice-insert" class="btn-secondary"><i class="fa-solid fa-terminal"></i> Вставити</button>
+              <button id="voice-retry" class="btn-secondary"><i class="fa-solid fa-rotate-right"></i> Ще раз</button>
+            </div>
+          </div>
+        </div>
+        <div id="key-bar" class="key-bar">
+          <button data-key="esc">Esc</button>
+          <button data-key="tab">Tab</button>
+          <button data-key="ctrl" id="key-ctrl" class="toggle">Ctrl</button>
+          <button data-key="up">↑</button>
+          <button data-key="down">↓</button>
+          <button data-key="left">←</button>
+          <button data-key="right">→</button>
+          <button data-seq="|">|</button>
+          <button data-seq="~">~</button>
+          <button data-seq="/">/</button>
+          <button data-seq="-">-</button>
+          <button data-key="home">Home</button>
+          <button data-key="end">End</button>
+          <button data-key="paste"><i class="fa-solid fa-paste"></i></button>
+        </div>
+      </main>
+
+      <!-- RIGHT SIDEBAR / SLIDE DRAWER: AI COPILOT -->
+      <aside id="ai-drawer" class="ai-drawer hidden">
+        <div class="ai-header">
+          <div class="ai-title">
+            <i class="fa-solid fa-robot text-pink"></i>
+            <span>AI Terminal Copilot</span>
+          </div>
+          <button id="btn-close-ai" class="icon-btn close-btn">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div class="ai-model-bar">
+          <label for="select-ai-model">Модель:</label>
+          <select id="select-ai-model">
+            <option value="auto">Розумний вибір (Авто)</option>
+            <option value="openai">OpenAI (GPT-4o-mini)</option>
+            <option value="gemini">Google Gemini 1.5</option>
+            <option value="builtin">Вбудований AI Linux</option>
+          </select>
+        </div>
+
+        <!-- AI CHAT HISTORY -->
+        <div id="ai-chat-body" class="ai-chat-body">
+          <div class="ai-message assistant-welcome">
+            <div class="msg-header">
+              <span class="badge badge-purple">ШІ Помічник</span>
+            </div>
+            <p>Привіт! Я твій термінальний асистент. Опиши українською мовою, що ти хочеш зробити, і я підберу точну команду для Linux / Zsh.</p>
+            <div class="quick-prompts">
+              <button class="prompt-chip" data-query="покажи зайняте місце на дисках">💾 Місце на дисках</button>
+              <button class="prompt-chip" data-query="знайти процеси з найбільшим CPU">🔥 Топ процесів</button>
+              <button class="prompt-chip" data-query="перевірити відкриті порти та з'єднання">🌐 Відкриті порти</button>
+              <button class="prompt-chip" data-query="показати використання пам'яті ram">🧠 Пам'ять RAM</button>
+              <button class="prompt-chip" data-query="знайти великі файли більше 100мб">🔍 Великі файли</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI INPUT BOX -->
+        <div class="ai-input-area">
+          <textarea id="ai-prompt-input" rows="2" placeholder="Напишіть завдання (наприклад: знайти всі файли .log або перезапустити nginx)..."></textarea>
+          <button id="btn-send-ai" class="btn-primary btn-ai-send" title="Надіслати запит">
+            <i class="fa-solid fa-paper-plane"></i>
+          </button>
+        </div>
+      </aside>
+
+    </div> <!-- End Workspace -->
+
+    <!-- ================= MODALS ================= -->
+
+    <!-- ADD / EDIT SSH CONNECTION MODAL -->
+    <div id="modal-connection" class="modal-backdrop hidden">
+      <div class="modal-dialog">
+        <div class="modal-header">
+          <h3 id="modal-conn-title"><i class="fa-solid fa-server text-purple"></i> Додати SSH підключення</h3>
+          <button class="icon-btn modal-close" data-modal="modal-connection"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <form id="form-connection" class="modal-body">
+          <input type="hidden" id="conn-id">
+
+          <div class="form-row">
+            <div class="form-group flex-2">
+              <label for="conn-name">Назва сервера *</label>
+              <input type="text" id="conn-name" placeholder="Напр. VPS Web Server" required>
+            </div>
+            <div class="form-group flex-1">
+              <label for="conn-group">Група / Категорія</label>
+              <input type="text" id="conn-group" placeholder="Servers" value="Servers">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-2">
+              <label for="conn-host">IP адреса або Hostname *</label>
+              <input type="text" id="conn-host" placeholder="192.168.1.100 або example.com" required>
+            </div>
+            <div class="form-group flex-1">
+              <label for="conn-port">Порт *</label>
+              <input type="number" id="conn-port" value="22" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="conn-user">Користувач (Username) *</label>
+            <input type="text" id="conn-user" placeholder="root або admin" required>
+          </div>
+
+          <div class="form-group">
+            <label>Спосіб автентифікації</label>
+            <div class="radio-group">
+              <label class="radio-label">
+                <input type="radio" name="conn-auth-type" value="password" checked>
+                <span>Пароль</span>
+              </label>
+              <label class="radio-label">
+                <input type="radio" name="conn-auth-type" value="key">
+                <span>SSH Ключ (Private Key)</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- PASSWORD FIELD -->
+          <div class="form-group" id="group-password">
+            <label for="conn-password">Пароль SSH</label>
+            <div class="password-wrapper">
+              <input type="password" id="conn-password" placeholder="Введіть пароль">
+              <button type="button" class="btn-toggle-pwd icon-btn" title="Показати пароль">
+                <i class="fa-solid fa-eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- KEY FIELD -->
+          <div class="form-group hidden" id="group-key">
+            <label>Приватний ключ (OpenSSH / PEM)</label>
+            <div class="radio-group" style="margin-bottom: 0.5rem">
+              <label class="radio-label">
+                <input type="radio" name="conn-key-source" value="keyring" checked>
+                <span>Зв'язка ключів</span>
+              </label>
+              <label class="radio-label">
+                <input type="radio" name="conn-key-source" value="text">
+                <span>Ввести текст</span>
+              </label>
+            </div>
+            
+            <div id="conn-key-keyring-wrapper">
+              <select id="conn-key-id">
+                <option value="">-- Оберіть ключ --</option>
+              </select>
+            </div>
+            
+            <div id="conn-key-text-wrapper" class="hidden">
+              <textarea id="conn-key" rows="4" placeholder="-----BEGIN OPENSSH PRIVATE KEY-----&#10;...&#10;-----END OPENSSH PRIVATE KEY-----"></textarea>
+            </div>
+
+            <div class="form-group mt-2">
+              <label for="conn-passphrase">Passphrase ключа (якщо є)</label>
+              <input type="password" id="conn-passphrase" placeholder="Passphrase">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="conn-notes">Коментар / Нотатки</label>
+            <input type="text" id="conn-notes" placeholder="Опис призначення сервера">
+          </div>
+
+          <div id="conn-test-status" class="status-box hidden"></div>
+
+          <div class="modal-footer">
+            <button type="button" id="btn-test-connection" class="btn-secondary">
+              <i class="fa-solid fa-vial"></i> Тестувати з'єднання
+            </button>
+            <div class="footer-actions-right">
+              <button type="button" class="btn-secondary modal-close" data-modal="modal-connection">Скасувати</button>
+              <button type="submit" class="btn-primary"><i class="fa-solid fa-floppy-disk"></i> Зберегти</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- QUICK CONNECT MODAL -->
+    <div id="modal-quick-connect" class="modal-backdrop hidden">
+      <div class="modal-dialog modal-sm">
+        <div class="modal-header">
+          <h3><i class="fa-solid fa-bolt text-yellow"></i> Швидке SSH Підключення</h3>
+          <button class="icon-btn modal-close" data-modal="modal-quick-connect"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <form id="form-quick-connect" class="modal-body">
+          <div class="form-group">
+            <label for="quick-target">Рядок підключення (user@host:port)</label>
+            <input type="text" id="quick-target" placeholder="root@192.168.1.1:22" required autofocus>
+          </div>
+          <div class="form-group">
+            <label for="quick-password">Пароль (якщо потрібен)</label>
+            <input type="password" id="quick-password" placeholder="Пароль">
+          </div>
+          <div class="form-group checkbox-label">
+            <label>
+              <input type="checkbox" id="quick-save">
+              <span>Зберегти у список серверів</span>
+            </label>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn-secondary modal-close" data-modal="modal-quick-connect">Скасувати</button>
+            <button type="submit" class="btn-primary"><i class="fa-solid fa-plug"></i> Підключитись</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- KEYRING MODAL -->
+    <div id="modal-keyring" class="modal-backdrop hidden">
+      <div class="modal-dialog">
+        <div class="modal-header">
+          <h3><i class="fa-solid fa-key text-yellow"></i> Зв'язка ключів</h3>
+          <button class="icon-btn modal-close" data-modal="modal-keyring"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+          <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+            <input type="text" id="keyring-name" placeholder="Назва ключа (напр., aws-prod)">
+            <input type="file" id="keyring-file" style="display: none;">
+            <button class="btn-primary" id="btn-keyring-upload" title="З файлу"><i class="fa-solid fa-file-upload"></i></button>
+            <button class="btn-secondary" id="btn-keyring-paste-toggle" title="Вставити текст"><i class="fa-solid fa-paste"></i></button>
+          </div>
+          <div id="keyring-paste-area" class="hidden" style="margin-bottom: 1rem;">
+            <textarea id="keyring-text-content" rows="4" placeholder="-----BEGIN OPENSSH PRIVATE KEY-----..."></textarea>
+            <button class="btn-primary" id="btn-keyring-save-text" style="width: 100%; margin-top: 0.5rem;"><i class="fa-solid fa-save"></i> Зберегти вставлений ключ</button>
+          </div>
+          <div id="keyring-list" class="hosts-container" style="max-height: 300px; border: 1px solid var(--bg-lighter);">
+            <!-- Keys go here -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS MODAL -->
+    <div id="modal-settings" class="modal-backdrop hidden">
+      <div class="modal-dialog">
+        <div class="modal-header">
+          <h3><i class="fa-solid fa-gear text-cyan"></i> Налаштування терміналу</h3>
+          <button class="icon-btn modal-close" data-modal="modal-settings"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+          <div class="settings-section">
+            <h4 class="settings-subtitle"><i class="fa-solid fa-font"></i> Шрифт та відображення</h4>
+            <div class="form-row">
+              <div class="form-group flex-2">
+                <label for="setting-font-family">Шрифт терміналу</label>
+                <select id="setting-font-family">
+                  <option value="'JetBrains Mono', monospace">JetBrains Mono (Рекомендовано)</option>
+                  <option value="'Fira Code', monospace">Fira Code</option>
+                  <option value="monospace">Системний моноширинний</option>
+                </select>
+              </div>
+              <div class="form-group flex-1">
+                <label for="setting-font-size">Розмір: <span id="font-size-val">15</span>px</label>
+                <input type="range" id="setting-font-size" min="12" max="24" value="15" step="1">
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <h4 class="settings-subtitle"><i class="fa-solid fa-microphone"></i> Голосове керування</h4>
+            <p class="settings-hint">З ключем OpenAI розпізнавання йде через Whisper (точніше). Без ключа — вбудоване розпізнавання браузера (Chrome/Edge/Safari).</p>
+            <div class="form-group">
+              <label for="setting-voice-lang">Мова мовлення</label>
+              <select id="setting-voice-lang">
+                <option value="uk-UA">Українська</option>
+                <option value="en-US">English</option>
+                <option value="ru-RU">Русский</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <h4 class="settings-subtitle"><i class="fa-solid fa-brain"></i> AI Ключі API (Опціонально)</h4>
+            <p class="settings-hint">Вбудований евристичний ШІ працює завжди. Для розширених відповідей ви можете підключити свій ключ:</p>
+            <div class="form-group">
+              <label for="setting-openai-key">OpenAI API Key</label>
+              <input type="password" id="setting-openai-key" placeholder="sk-...">
+            </div>
+            <div class="form-group">
+              <label for="setting-gemini-key">Google Gemini API Key</label>
+              <input type="password" id="setting-gemini-key" placeholder="AIza...">
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn-secondary modal-close" data-modal="modal-settings">Закрити</button>
+            <button type="button" id="btn-save-settings" class="btn-primary"><i class="fa-solid fa-check"></i> Зберегти налаштування</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div> <!-- End App -->
+
+  <!-- Load XTerm JS and Addons -->
+  <script src="/vendor/xterm/lib/xterm.js"></script>
+  <script src="/vendor/addon-fit/lib/addon-fit.js"></script>
+  <script src="/vendor/addon-web-links/lib/addon-web-links.js"></script>
+
+  <!-- App Core JS -->
+  <script src="app.js"></script>
+</body>
+</html>

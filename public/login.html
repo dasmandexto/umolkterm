@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1e1f29">
+  <title>UmolkTerm — Вхід</title>
+  <link rel="stylesheet" href="/login.css">
+</head>
+<body>
+  <main class="card">
+    <div class="logo">🦇</div>
+    <h1>Umolk<span>Term</span></h1>
+    <p class="sub">Вхід до терміналу</p>
+    <form id="form" autocomplete="on">
+      <input type="text" name="username" value="umolk" autocomplete="username" hidden>
+      <input id="pw" type="password" name="password" placeholder="Пароль" autocomplete="current-password" autofocus required>
+      <button type="submit" id="btn">Увійти</button>
+      <div id="err" class="err"></div>
+    </form>
+  </main>
+  <script>
+    const form = document.getElementById('form');
+    const err = document.getElementById('err');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      err.textContent = '';
+      const btn = document.getElementById('btn');
+      btn.disabled = true;
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: document.getElementById('pw').value })
+        });
+        const d = await res.json();
+        if (d.success) location.href = '/';
+        else err.textContent = d.error || 'Помилка входу';
+      } catch (x) {
+        err.textContent = 'Помилка мережі';
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

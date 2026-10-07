@@ -1,0 +1,46 @@
+# ~/.zshrc — UmolkTerm
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+
+HISTFILE=~/.zsh_history
+HISTSIZE=20000
+SAVEHIST=20000
+setopt appendhistory sharehistory incappendhistory hist_ignore_all_dups hist_save_no_dups hist_ignore_space
+setopt autocd interactivecomments
+
+autoload -Uz compinit add-zsh-hook
+compinit -d ~/.zcompdump
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
+zstyle ':completion:*' menu select
+
+# Історія по стрілках за префіксом
+bindkey '^[[A' history-beginning-search-backward
+bindkey '^[[B' history-beginning-search-forward
+
+export LS_COLORS="di=1;35:ln=36:so=32:pi=33:ex=1;32:bd=34;46:cd=34;43"
+alias ls='ls --color=auto'
+alias ll='ls -lah --color=auto'
+alias l='ls -CF --color=auto'
+alias grep='grep --color=auto'
+alias ..='cd ..'
+alias ...='cd ../..'
+
+if [ -f /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]; then
+  source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+  ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=#6272a4'
+fi
+if [ -f /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]; then
+  source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+fi
+
+# Автовибір prompt за шириною терміналу (має бути ДО starship init)
+umolk_pick_prompt() {
+  if (( COLUMNS < 70 )); then
+    export STARSHIP_CONFIG=~/.config/starship-compact.toml
+  else
+    export STARSHIP_CONFIG=~/.config/starship.toml
+  fi
+}
+add-zsh-hook precmd umolk_pick_prompt
+
+command -v starship >/dev/null 2>&1 && eval "$(starship init zsh)"
