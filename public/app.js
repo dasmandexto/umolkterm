@@ -1021,29 +1021,32 @@ class DraculaTerminalApp {
     document.getElementById('sidebar-backdrop').addEventListener('click', () => this.setSidebar(false));
     
     // Swipe gestures for sidebars on mobile
-    let touchStartX = -1;
     const sidebar = document.getElementById('sidebar');
     
-    // Close gestures (on the sidebars themselves)
-    sidebar.addEventListener('touchstart', e => touchStartX = e.changedTouches[0].screenX, {passive: true});
+    // Close gestures
+    let closeTouchStartX = -1;
+    sidebar.addEventListener('touchstart', e => closeTouchStartX = e.changedTouches[0].screenX, {passive: true});
     sidebar.addEventListener('touchend', e => {
-      if (touchStartX > -1 && touchStartX - e.changedTouches[0].screenX > 50) this.setSidebar(false); // Swiped left
+      if (closeTouchStartX > -1 && closeTouchStartX - e.changedTouches[0].screenX > 50) this.setSidebar(false);
     });
     
-    this.aiDrawer.addEventListener('touchstart', e => touchStartX = e.changedTouches[0].screenX, {passive: true});
+    let aiTouchStartX = -1;
+    this.aiDrawer.addEventListener('touchstart', e => aiTouchStartX = e.changedTouches[0].screenX, {passive: true});
     this.aiDrawer.addEventListener('touchend', e => {
-      if (touchStartX > -1 && e.changedTouches[0].screenX - touchStartX > 50) this.aiDrawer.classList.add('hidden'); // Swiped right
+      if (aiTouchStartX > -1 && e.changedTouches[0].screenX - aiTouchStartX > 50) this.aiDrawer.classList.add('hidden');
     });
 
     // Open gesture (swipe from the left edge of the screen)
+    let openTouchStartX = -1;
     document.addEventListener('touchstart', e => {
-      if (e.touches.length === 1 && e.touches[0].clientX < 30) touchStartX = e.touches[0].clientX;
-      else touchStartX = -1;
+      if (e.touches.length === 1 && e.touches[0].clientX < 30) openTouchStartX = e.touches[0].clientX;
+      else openTouchStartX = -1;
     }, {passive: true});
     document.addEventListener('touchend', e => {
-      if (touchStartX > -1 && touchStartX < 30 && e.changedTouches[0].clientX - touchStartX > 50) {
+      if (openTouchStartX > -1 && e.changedTouches[0].clientX - openTouchStartX > 50) {
         this.setSidebar(true);
       }
+      openTouchStartX = -1;
     });
 
     document.getElementById('btn-logout').addEventListener('click', async () => {
