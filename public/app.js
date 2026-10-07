@@ -525,6 +525,7 @@ class DraculaTerminalApp {
           title: conn.name,
           connId: conn.id
         });
+        if (this.isMobile()) this.setSidebar(false);
       });
 
       // Card double click -> connect
@@ -534,6 +535,7 @@ class DraculaTerminalApp {
           title: conn.name,
           connId: conn.id
         });
+        if (this.isMobile()) this.setSidebar(false);
       });
 
       // Test button

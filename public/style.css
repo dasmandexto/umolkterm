@@ -489,15 +489,15 @@ input, button, select, textarea {
 .host-actions {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 12px;
 }
 
 .host-action-btn {
   background: transparent;
   border: none;
   color: var(--dracula-comment);
-  font-size: 11px;
-  padding: 4px;
+  font-size: 16px;
+  padding: 6px;
   border-radius: 4px;
   cursor: pointer;
   transition: all var(--transition-fast);
