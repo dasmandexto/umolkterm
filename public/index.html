@@ -451,6 +451,16 @@
           </div>
 
           <div class="settings-section">
+            <h4 class="settings-subtitle"><i class="fa-solid fa-truck-fast text-green"></i> Переїзд (Дані)</h4>
+            <div class="form-group" style="flex-direction: row; gap: 12px; align-items: center;">
+              <button type="button" id="btn-export-data" class="btn-secondary" style="flex: 1;"><i class="fa-solid fa-file-export"></i> Експорт даних</button>
+              <button type="button" id="btn-import-data" class="btn-secondary" style="flex: 1;"><i class="fa-solid fa-file-import"></i> Імпорт даних</button>
+              <input type="file" id="file-import-data" accept=".json" style="display: none;">
+            </div>
+            <div class="form-hint" style="margin-top: 4px; font-size: 11px; opacity: 0.8;">Експортує всі ваші сервери та ключі у файл для перенесення на інший пристрій.</div>
+          </div>
+
+          <div class="settings-section">
             <h4 class="settings-subtitle"><i class="fa-solid fa-brain"></i> AI Ключі API (Опціонально)</h4>
             <p class="settings-hint">Вбудований евристичний ШІ працює завжди. Для розширених відповідей ви можете підключити свій ключ:</p>
             <div class="form-group">
@@ -479,6 +489,6 @@
   <script src="/vendor/addon-web-links/lib/addon-web-links.js"></script>
 
   <!-- App Core JS -->
-  <script src="app.js?v=7"></script>
+  <script src="app.js?v=8"></script>
 </body>
 </html>

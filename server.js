@@ -490,6 +490,40 @@ app.get('/api/settings', (req, res) => {
   });
 });
 
+app.get('/api/export', (req, res) => {
+  res.json({
+    success: true,
+    connections: getConnections(),
+    keys: getKeys()
+  });
+});
+
+app.post('/api/import', (req, res) => {
+  const { connections, keys } = req.body;
+  
+  if (Array.isArray(keys)) {
+    const existing = getKeys();
+    keys.forEach(k => {
+      const idx = existing.findIndex(e => e.id === k.id);
+      if (idx > -1) existing[idx] = k;
+      else existing.push(k);
+    });
+    saveKeys(existing);
+  }
+  
+  if (Array.isArray(connections)) {
+    const existing = getConnections();
+    connections.forEach(c => {
+      const idx = existing.findIndex(e => e.id === c.id);
+      if (idx > -1) existing[idx] = c;
+      else existing.push(c);
+    });
+    saveConnections(existing);
+  }
+  
+  res.json({ success: true });
+});
+
 app.post('/api/settings', (req, res) => {
   const current = getSettings();
   const updated = {

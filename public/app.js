@@ -1417,6 +1417,55 @@ class DraculaTerminalApp {
       btn.disabled = false;
     });
 
+    document.getElementById('btn-export-data')?.addEventListener('click', async () => {
+      try {
+        const res = await fetch('/api/export');
+        const data = await res.json();
+        if (data.success) {
+          const blob = new Blob([JSON.stringify({ connections: data.connections, keys: data.keys }, null, 2)], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `umolkterm_backup_${new Date().toISOString().split('T')[0]}.json`;
+          a.click();
+          URL.revokeObjectURL(url);
+        }
+      } catch (e) {
+        alert('Помилка при експорті: ' + e.message);
+      }
+    });
+
+    document.getElementById('btn-import-data')?.addEventListener('click', () => {
+      document.getElementById('file-import-data').click();
+    });
+
+    document.getElementById('file-import-data')?.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = async (ev) => {
+        try {
+          const json = JSON.parse(ev.target.result);
+          const res = await fetch('/api/import', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(json)
+          });
+          const result = await res.json();
+          if (result.success) {
+            alert('Дані успішно імпортовано! Сторінка буде перезавантажена.');
+            location.reload();
+          } else {
+            alert('Помилка імпорту: ' + (result.error || 'Невідома помилка'));
+          }
+        } catch (err) {
+          alert('Помилка читання файлу: перевірте формат JSON');
+        }
+        e.target.value = ''; // reset
+      };
+      reader.readAsText(file);
+    });
+
     // Fullscreen toggle
     document.getElementById('btn-fullscreen').addEventListener('click', () => {
       if (!document.fullscreenElement) {
