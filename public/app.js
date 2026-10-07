@@ -147,12 +147,22 @@ class DraculaTerminalApp {
         if (key === 'ctrl') {
           btn.classList.toggle('on');
         } else if (key === 'paste') {
-          try { this.sendRaw(await navigator.clipboard.readText()); } catch (e) {}
-        } else if (key === 'paste-run') {
-          try { 
+          try {
             const text = await navigator.clipboard.readText();
-            this.sendRaw(text + '\r');
-          } catch (e) {}
+            if (text) this.sendRaw(text);
+          } catch (e) {
+            console.warn('Clipboard read error:', e);
+          }
+        } else if (key === 'paste-run') {
+          try {
+            const text = await navigator.clipboard.readText();
+            if (text) {
+              const clean = text.replace(/[\r\n]+$/, '');
+              this.sendRaw(clean + '\r');
+            }
+          } catch (e) {
+            console.warn('Clipboard read error:', e);
+          }
         } else if (key) {
           this.sendRaw(KEYS[key]);
         } else if (btn.dataset.seq) {
@@ -794,10 +804,19 @@ class DraculaTerminalApp {
     this.voice = { active: false, mode: null, recorder: null, stream: null, chunks: [], recognition: null, cmd: '', timer: null };
     this.$ = (id) => document.getElementById(id);
 
-    this.$('btn-mic').addEventListener('click', () => {
+    const toggleMic = () => {
       if (this.voice.active) this.stopVoice();
       else this.startVoice();
-    });
+    };
+
+    this.$('btn-mic')?.addEventListener('click', toggleMic);
+    this.$('btn-mic-bar')?.addEventListener('click', toggleMic);
+
+    this.setMicRecording = (isRec) => {
+      this.$('btn-mic')?.classList.toggle('recording', isRec);
+      this.$('btn-mic-bar')?.classList.toggle('recording', isRec);
+    };
+
     this.$('voice-close').addEventListener('click', () => this.cancelVoice());
     this.$('voice-retry').addEventListener('click', () => this.startVoice());
     this.$('voice-insert').addEventListener('click', () => {
@@ -854,7 +873,7 @@ class DraculaTerminalApp {
       else this.startBrowserRecognition(SR, lang);
     } catch (e) {
       this.voice.active = false;
-      this.$('btn-mic').classList.remove('recording');
+      this.setMicRecording?.(false);
       const denied = e && (e.name === 'NotAllowedError' || e.name === 'SecurityError');
       this.showVoicePanel('⚠️ Немає доступу до мікрофона', {
         transcript: denied ? 'Дозвольте доступ до мікрофона для цього сайту в налаштуваннях браузера.' : String(e.message || e)
@@ -874,6 +893,7 @@ class DraculaTerminalApp {
       const chunks = this.voice.chunks;
       const type = rec.mimeType || 'audio/webm';
       this.releaseStream();
+      this.setMicRecording?.(false);
       if (!this.voice.mode) return; // скасовано
       if (!chunks.length) { this.showVoicePanel('Нічого не записано'); return; }
       this.showVoicePanel('🧠 Розпізнаю (Whisper)…', { transcript: '' });
@@ -892,7 +912,7 @@ class DraculaTerminalApp {
     };
 
     rec.start();
-    this.$('btn-mic').classList.add('recording');
+    this.setMicRecording?.(true);
     this.showVoicePanel('🎙 Слухаю… натисніть мікрофон, щоб завершити', { rec: true, transcript: '' });
     this.voice.timer = setTimeout(() => this.stopVoice(), 60000);
   }
@@ -932,13 +952,13 @@ class DraculaTerminalApp {
     };
 
     r.start();
-    this.$('btn-mic').classList.add('recording');
+    this.setMicRecording?.(true);
     this.showVoicePanel('🎙 Слухаю… говоріть', { rec: true, transcript: '' });
   }
 
   stopVoice() {
     clearTimeout(this.voice.timer);
-    this.$('btn-mic').classList.remove('recording');
+    this.setMicRecording?.(false);
     if (this.voice.mode === 'whisper' && this.voice.recorder && this.voice.recorder.state !== 'inactive') {
       this.voice.active = false;
       this.voice.recorder.stop();
@@ -949,7 +969,7 @@ class DraculaTerminalApp {
 
   endVoiceUi() {
     this.voice.active = false;
-    this.$('btn-mic').classList.remove('recording');
+    this.setMicRecording?.(false);
   }
 
   releaseStream() {
@@ -967,7 +987,7 @@ class DraculaTerminalApp {
     try { if (v.recorder && v.recorder.state !== 'inactive') { v.recorder.onstop = null; v.recorder.stop(); } } catch (e) {}
     this.releaseStream();
     v.recognition = null; v.recorder = null; v.active = false;
-    this.$('btn-mic').classList.remove('recording');
+    this.setMicRecording?.(false);
   }
 
   cancelVoice() {

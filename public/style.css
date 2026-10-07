@@ -1196,5 +1196,5 @@ input, button, select, textarea {
 .voice-danger { background: var(--dracula-red) !important; color: #fff !important; }
 
 @media (max-width: 820px) {
-  .voice-panel { left: 6px; right: 6px; bottom: 6px; }
+  .voice-panel { left: 6px; right: 6px; bottom: 44px; }
 }

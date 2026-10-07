@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="/vendor/xterm/css/xterm.css">
   
   <!-- Custom Dracula Theme CSS -->
-  <link rel="stylesheet" href="style.css?v=12">
+  <link rel="stylesheet" href="style.css?v=13">
 </head>
 <body class="theme-umolk">
   <div id="app" class="app-layout">
@@ -63,7 +63,7 @@
           <i class="fa-solid fa-bolt"></i>
           <span class="btn-label">Швидкий SSH</span>
         </button>
-        <button id="btn-mic" class="action-btn mic-btn" title="Голосова команда">
+        <button id="btn-mic" class="action-btn mic-btn hide-mobile" title="Голосова команда">
           <i class="fa-solid fa-microphone"></i>
         </button>
         <button id="btn-ai-toggle" class="action-btn ai-btn" title="AI Terminal Copilot">
@@ -156,7 +156,10 @@
         </div>
         <div id="key-bar" class="key-bar">
           <button data-key="paste-run" style="background: rgba(80, 250, 123, 0.15); color: var(--dracula-green); border-color: rgba(80, 250, 123, 0.3);" title="Вставити і виконати">
-            <i class="fa-solid fa-paste"></i><i class="fa-solid fa-turn-down fa-rotate-90" style="margin-left: 2px; font-size: 10px;"></i>
+            <i class="fa-solid fa-play" style="font-size: 11px;"></i><i class="fa-solid fa-paste" style="margin-left: 3px; font-size: 10px;"></i>
+          </button>
+          <button id="btn-mic-bar" class="mic-btn" style="background: rgba(139, 233, 253, 0.15); color: var(--dracula-cyan); border-color: rgba(139, 233, 253, 0.3);" title="Голосове введення (Whisper)">
+            <i class="fa-solid fa-microphone"></i>
           </button>
           <button data-key="esc">Esc</button>
           <button data-key="tab">Tab</button>
@@ -493,6 +496,6 @@
   <script src="/vendor/addon-web-links/lib/addon-web-links.js"></script>
 
   <!-- App Core JS -->
-  <script src="app.js?v=13"></script>
+  <script src="app.js?v=14"></script>
 </body>
 </html>
