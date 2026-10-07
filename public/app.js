@@ -1020,16 +1020,30 @@ class DraculaTerminalApp {
 
     document.getElementById('sidebar-backdrop').addEventListener('click', () => this.setSidebar(false));
     
-    // Swipe to close sidebars on mobile
-    let touchStartX = 0;
+    // Swipe gestures for sidebars on mobile
+    let touchStartX = -1;
     const sidebar = document.getElementById('sidebar');
+    
+    // Close gestures (on the sidebars themselves)
     sidebar.addEventListener('touchstart', e => touchStartX = e.changedTouches[0].screenX, {passive: true});
     sidebar.addEventListener('touchend', e => {
-      if (touchStartX - e.changedTouches[0].screenX > 50) this.setSidebar(false); // Swiped left
+      if (touchStartX > -1 && touchStartX - e.changedTouches[0].screenX > 50) this.setSidebar(false); // Swiped left
     });
+    
     this.aiDrawer.addEventListener('touchstart', e => touchStartX = e.changedTouches[0].screenX, {passive: true});
     this.aiDrawer.addEventListener('touchend', e => {
-      if (e.changedTouches[0].screenX - touchStartX > 50) this.aiDrawer.classList.add('hidden'); // Swiped right
+      if (touchStartX > -1 && e.changedTouches[0].screenX - touchStartX > 50) this.aiDrawer.classList.add('hidden'); // Swiped right
+    });
+
+    // Open gesture (swipe from the left edge of the screen)
+    document.addEventListener('touchstart', e => {
+      if (e.touches.length === 1 && e.touches[0].clientX < 30) touchStartX = e.touches[0].clientX;
+      else touchStartX = -1;
+    }, {passive: true});
+    document.addEventListener('touchend', e => {
+      if (touchStartX > -1 && touchStartX < 30 && e.changedTouches[0].clientX - touchStartX > 50) {
+        this.setSidebar(true);
+      }
     });
 
     document.getElementById('btn-logout').addEventListener('click', async () => {
