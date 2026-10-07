@@ -141,7 +141,7 @@ class DraculaTerminalApp {
     };
     document.querySelectorAll('#key-bar button').forEach(btn => {
       // не забираємо фокус у терміналу, щоб клавіатура не зникала
-      btn.addEventListener('pointerdown', (e) => e.preventDefault());
+      btn.addEventListener('mousedown', (e) => e.preventDefault());
       btn.addEventListener('click', async () => {
         const key = btn.dataset.key;
         if (key === 'ctrl') {
