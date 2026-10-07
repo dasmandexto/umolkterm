@@ -501,6 +501,26 @@ app.post('/api/settings', (req, res) => {
   res.json({ success: true, settings: safeUpdated });
 });
 
+app.post('/api/settings/whisper', (req, res) => {
+  const { model } = req.body;
+  if (!model) return res.status(400).json({ success: false, error: 'Модель не вказана' });
+  
+  // Write to .env
+  let envContent = '';
+  if (require('fs').existsSync('.env')) envContent = require('fs').readFileSync('.env', 'utf8');
+  
+  const lines = envContent.split('\n').filter(l => !l.startsWith('UMOLK_WHISPER_MODEL='));
+  lines.push(`UMOLK_WHISPER_MODEL="${model}"`);
+  require('fs').writeFileSync('.env', lines.join('\n'));
+  
+  // Kill whisper worker and spawn it again
+  require('child_process').exec("pkill -f 'whisper/worker.py' || true; nohup whisper/venv/bin/python whisper/worker.py > whisper.log 2>&1 &", (err) => {
+    if (err) console.error("Помилка перезапуску воркера:", err);
+  });
+  
+  res.json({ success: true, message: 'Модель змінено. Воркер перезапускається у фоні.' });
+});
+
 // AI Copilot endpoint
 app.post('/api/ai/ask', async (req, res) => {
   const { prompt, model: requestedModel } = req.body;

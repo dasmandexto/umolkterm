@@ -434,6 +434,23 @@
           </div>
 
           <div class="settings-section">
+            <h4 class="settings-subtitle"><i class="fa-solid fa-microphone text-orange"></i> Голосове введення</h4>
+            <div class="form-group">
+              <label for="setting-whisper-model">Локальна Whisper Модель (GGUF)</label>
+              <div style="display: flex; gap: 8px;">
+                <select id="setting-whisper-model" style="flex: 1;">
+                  <option value="tiny">Tiny (~39MB) - Найшвидше</option>
+                  <option value="small-q5_1">Small (~180MB) - Баланс</option>
+                  <option value="medium-q5_0">Medium (~500MB) - Гарна якість</option>
+                  <option value="large-v3-q5_0">Large v3 (~1.1GB) - Найкраще</option>
+                </select>
+                <button type="button" id="btn-apply-whisper" class="btn-secondary" style="white-space: nowrap;"><i class="fa-solid fa-download"></i> Застосувати</button>
+              </div>
+              <div class="form-hint" style="margin-top: 6px; font-size: 11px; opacity: 0.8;">При застосуванні сервер автоматично завантажить модель з інтернету (якщо її ще немає) та перезапустить Python-воркер.</div>
+            </div>
+          </div>
+
+          <div class="settings-section">
             <h4 class="settings-subtitle"><i class="fa-solid fa-brain"></i> AI Ключі API (Опціонально)</h4>
             <p class="settings-hint">Вбудований евристичний ШІ працює завжди. Для розширених відповідей ви можете підключити свій ключ:</p>
             <div class="form-group">
@@ -462,6 +479,6 @@
   <script src="/vendor/addon-web-links/lib/addon-web-links.js"></script>
 
   <!-- App Core JS -->
-  <script src="app.js?v=3"></script>
+  <script src="app.js?v=5"></script>
 </body>
 </html>

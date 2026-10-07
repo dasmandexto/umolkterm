@@ -1379,6 +1379,28 @@ class DraculaTerminalApp {
       document.getElementById('setting-openai-key').value = '';
       document.getElementById('setting-gemini-key').value = '';
       this.applySettings();
+      alert('Налаштування збережено');
+    });
+
+    document.getElementById('btn-apply-whisper')?.addEventListener('click', async () => {
+      const model = document.getElementById('setting-whisper-model').value;
+      const btn = document.getElementById('btn-apply-whisper');
+      const ogHtml = btn.innerHTML;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Чекайте...';
+      btn.disabled = true;
+      try {
+        const r = await fetch('/api/settings/whisper', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ model })
+        });
+        const json = await r.json();
+        if (json.success) alert(json.message);
+        else alert('Помилка: ' + json.error);
+      } catch (e) { alert('Помилка мережі'); }
+      btn.innerHTML = ogHtml;
+      btn.disabled = false;
+    });
       document.getElementById('modal-settings').classList.add('hidden');
     });
 
