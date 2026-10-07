@@ -90,7 +90,12 @@ class DraculaTerminalApp {
     // Handle window resize
     window.addEventListener('resize', () => this.fitActiveTerminal());
     if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', () => this.fitActiveTerminal());
+      const updateVV = () => {
+        document.documentElement.style.setProperty('--vv-height', `${window.visualViewport.height}px`);
+        this.fitActiveTerminal();
+      };
+      window.visualViewport.addEventListener('resize', updateVV);
+      updateVV();
     }
     new ResizeObserver(() => this.fitActiveTerminal()).observe(this.terminalsContainerEl);
     document.fonts.ready.then(() => this.applySettings());
