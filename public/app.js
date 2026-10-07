@@ -1038,15 +1038,26 @@ class DraculaTerminalApp {
       if (aiTouchStartX > -1 && e.changedTouches[0].screenX - aiTouchStartX > 50) this.aiDrawer.classList.add('hidden');
     });
 
-    // Open gesture (swipe from the left edge of the screen)
+    // Open gesture (swipe from anywhere left-to-right)
     let openTouchStartX = -1;
+    let openTouchStartY = -1;
     document.addEventListener('touchstart', e => {
-      if (e.touches.length === 1 && e.touches[0].clientX < 30) openTouchStartX = e.touches[0].clientX;
-      else openTouchStartX = -1;
+      if (e.touches.length === 1) {
+        openTouchStartX = e.touches[0].clientX;
+        openTouchStartY = e.touches[0].clientY;
+      } else {
+        openTouchStartX = -1;
+      }
     }, {passive: true});
     document.addEventListener('touchend', e => {
-      if (openTouchStartX > -1 && e.changedTouches[0].clientX - openTouchStartX > 50) {
-        this.setSidebar(true);
+      if (openTouchStartX > -1) {
+        const deltaX = e.changedTouches[0].clientX - openTouchStartX;
+        const deltaY = Math.abs(e.changedTouches[0].clientY - openTouchStartY);
+        
+        // Swiped right more than 60px, and mostly horizontally (deltaY < 40px)
+        if (deltaX > 60 && deltaY < 40) {
+          this.setSidebar(true);
+        }
       }
       openTouchStartX = -1;
     });
