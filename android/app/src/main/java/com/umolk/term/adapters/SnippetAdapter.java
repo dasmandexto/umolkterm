@@ -41,9 +41,9 @@ public class SnippetAdapter extends RecyclerView.Adapter<SnippetAdapter.SnippetV
         holder.tvSnippetGroup.setText(snippet.getGroup());
         holder.tvSnippetCommand.setText(snippet.getCommand());
 
-        holder.btnRun.setOnClickListener(v -> listener.onRun(snippet));
-        holder.btnInsert.setOnClickListener(v -> listener.onInsert(snippet));
-        holder.btnDelete.setOnClickListener(v -> listener.onDelete(snippet));
+        holder.btnSnippetRun.setOnClickListener(v -> listener.onRun(snippet));
+        holder.btnSnippetInsert.setOnClickListener(v -> listener.onInsert(snippet));
+        holder.btnSnippetDelete.setOnClickListener(v -> listener.onDelete(snippet));
     }
 
     @Override
@@ -53,16 +53,16 @@ public class SnippetAdapter extends RecyclerView.Adapter<SnippetAdapter.SnippetV
 
     static class SnippetViewHolder extends RecyclerView.ViewHolder {
         TextView tvSnippetGroup, tvSnippetTitle, tvSnippetCommand;
-        Button btnRun, btnInsert, btnDelete;
+        Button btnSnippetRun, btnSnippetInsert, btnSnippetDelete;
 
         public SnippetViewHolder(@NonNull View itemView) {
             super(itemView);
             tvSnippetGroup = itemView.findViewById(R.id.tvSnippetGroup);
             tvSnippetTitle = itemView.findViewById(R.id.tvSnippetTitle);
             tvSnippetCommand = itemView.findViewById(R.id.tvSnippetCommand);
-            btnRun = itemView.findViewById(R.id.btnRunSnippet);
-            btnInsert = itemView.findViewById(R.id.btnInsertSnippet);
-            btnDelete = itemView.findViewById(R.id.btnDeleteSnippet);
+            btnSnippetRun = itemView.findViewById(R.id.btnSnippetRun);
+            btnSnippetInsert = itemView.findViewById(R.id.btnSnippetInsert);
+            btnSnippetDelete = itemView.findViewById(R.id.btnSnippetDelete);
         }
     }
 }

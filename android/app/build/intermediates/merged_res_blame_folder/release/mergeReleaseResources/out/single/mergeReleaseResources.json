@@ -1,0 +1,34 @@
+[
+    {
+        "merged": "com.umolk.term.app-release-23:/layout_item_snippet_card.xml.flat",
+        "source": "com.umolk.term.app-main-24:/layout/item_snippet_card.xml"
+    },
+    {
+        "merged": "com.umolk.term.app-release-23:/layout_item_host_card.xml.flat",
+        "source": "com.umolk.term.app-main-24:/layout/item_host_card.xml"
+    },
+    {
+        "merged": "com.umolk.term.app-release-23:/layout_dialog_edit_snippet.xml.flat",
+        "source": "com.umolk.term.app-main-24:/layout/dialog_edit_snippet.xml"
+    },
+    {
+        "merged": "com.umolk.term.app-release-23:/layout_dialog_edit_host.xml.flat",
+        "source": "com.umolk.term.app-main-24:/layout/dialog_edit_host.xml"
+    },
+    {
+        "merged": "com.umolk.term.app-release-23:/layout_item_key_card.xml.flat",
+        "source": "com.umolk.term.app-main-24:/layout/item_key_card.xml"
+    },
+    {
+        "merged": "com.umolk.term.app-release-23:/layout_dialog_keyring.xml.flat",
+        "source": "com.umolk.term.app-main-24:/layout/dialog_keyring.xml"
+    },
+    {
+        "merged": "com.umolk.term.app-release-23:/layout_dialog_settings.xml.flat",
+        "source": "com.umolk.term.app-main-24:/layout/dialog_settings.xml"
+    },
+    {
+        "merged": "com.umolk.term.app-release-23:/layout_activity_main.xml.flat",
+        "source": "com.umolk.term.app-main-24:/layout/activity_main.xml"
+    }
+]

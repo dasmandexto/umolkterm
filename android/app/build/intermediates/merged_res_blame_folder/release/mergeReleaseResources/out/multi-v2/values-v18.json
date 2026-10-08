@@ -1,0 +1,19 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.umolk.term.app-mergeReleaseResources-21:/values-v18/values-v18.xml",
+            "map": [
+                {
+                    "source": "/home/admin/.gradle/caches/8.9/transforms/b280b8b73e7086371257f897b7ef4e09/transformed/appcompat-1.6.1/res/values-v18/values-v18.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "48",
+                        "endOffsets": "99"
+                    }
+                }
+            ]
+        }
+    ]
+}

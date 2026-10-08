@@ -38,15 +38,16 @@ public class HostAdapter extends RecyclerView.Adapter<HostAdapter.HostViewHolder
     @Override
     public void onBindViewHolder(@NonNull HostViewHolder holder, int position) {
         SshHost host = hostList.get(position);
-        holder.tvHostLabel.setText(host.getLabel());
+        holder.tvHostName.setText(host.getLabel());
         holder.tvHostEndpoint.setText(host.getEndpoint());
-        holder.tvHostGroup.setText(host.getGroup());
-        holder.tvHostStatusDot.setTextColor(host.isOnline() ? 0xFF50FA7B : 0xFF6272A4);
+        holder.tvBadgeGroup.setText(host.getGroup());
+        holder.tvBadgeAuth.setText(host.getAuthType().toUpperCase());
+        holder.viewColorDot.setBackgroundColor(host.isOnline() ? 0xFF50FA7B : 0xFF6272A4);
 
         holder.btnConnect.setOnClickListener(v -> listener.onConnect(host));
-        holder.btnTest.setOnClickListener(v -> listener.onTest(host));
-        holder.btnEdit.setOnClickListener(v -> listener.onEdit(host));
-        holder.btnDelete.setOnClickListener(v -> listener.onDelete(host));
+        holder.btnTestHost.setOnClickListener(v -> listener.onTest(host));
+        holder.btnEditHost.setOnClickListener(v -> listener.onEdit(host));
+        holder.btnDeleteHost.setOnClickListener(v -> listener.onDelete(host));
     }
 
     @Override
@@ -55,19 +56,21 @@ public class HostAdapter extends RecyclerView.Adapter<HostAdapter.HostViewHolder
     }
 
     static class HostViewHolder extends RecyclerView.ViewHolder {
-        TextView tvHostStatusDot, tvHostLabel, tvHostEndpoint, tvHostGroup;
-        Button btnConnect, btnTest, btnEdit, btnDelete;
+        View viewColorDot;
+        TextView tvHostName, tvHostEndpoint, tvBadgeGroup, tvBadgeAuth;
+        Button btnConnect, btnTestHost, btnEditHost, btnDeleteHost;
 
         public HostViewHolder(@NonNull View itemView) {
             super(itemView);
-            tvHostStatusDot = itemView.findViewById(R.id.tvHostStatusDot);
-            tvHostLabel = itemView.findViewById(R.id.tvHostLabel);
+            viewColorDot = itemView.findViewById(R.id.viewColorDot);
+            tvHostName = itemView.findViewById(R.id.tvHostName);
             tvHostEndpoint = itemView.findViewById(R.id.tvHostEndpoint);
-            tvHostGroup = itemView.findViewById(R.id.tvHostGroup);
-            btnConnect = itemView.findViewById(R.id.btnConnectHost);
-            btnTest = itemView.findViewById(R.id.btnTestHost);
-            btnEdit = itemView.findViewById(R.id.btnEditHost);
-            btnDelete = itemView.findViewById(R.id.btnDeleteHost);
+            tvBadgeGroup = itemView.findViewById(R.id.tvBadgeGroup);
+            tvBadgeAuth = itemView.findViewById(R.id.tvBadgeAuth);
+            btnConnect = itemView.findViewById(R.id.btnConnect);
+            btnTestHost = itemView.findViewById(R.id.btnTestHost);
+            btnEditHost = itemView.findViewById(R.id.btnEditHost);
+            btnDeleteHost = itemView.findViewById(R.id.btnDeleteHost);
         }
     }
 }

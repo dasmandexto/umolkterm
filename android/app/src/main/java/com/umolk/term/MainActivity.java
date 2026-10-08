@@ -24,6 +24,7 @@ import com.umolk.term.adapters.HostAdapter;
 import com.umolk.term.adapters.SnippetAdapter;
 import com.umolk.term.models.Snippet;
 import com.umolk.term.models.SshHost;
+import com.umolk.term.ssh.SshTerminalManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,18 +33,19 @@ public class MainActivity extends AppCompatActivity {
 
     private DrawerLayout drawerLayout;
     private FrameLayout terminalStage;
-    private TextView voiceInterimText;
-    private View voiceInputCard;
+    private TextView terminalOutput;
+    private View voicePanel;
+    private TextView voiceStateText;
+    private TextView voiceTranscriptText;
 
     // Adapters & Lists
-    private RecyclerView recyclerHosts;
+    private RecyclerView rvHostsList;
     private HostAdapter hostAdapter;
     private List<SshHost> hostList = new ArrayList<>();
 
     private List<Snippet> snippetList = new ArrayList<>();
     private SnippetAdapter snippetAdapter;
     private SshTerminalManager sshManager;
-    private TextView terminalTextView;
 
     private int currentFontSize = 12;
 
@@ -62,51 +64,48 @@ public class MainActivity extends AppCompatActivity {
     private void initViews() {
         drawerLayout = findViewById(R.id.drawerLayout);
         terminalStage = findViewById(R.id.terminalStage);
-        voiceInterimText = findViewById(R.id.voiceInterimText);
-        voiceInputCard = findViewById(R.id.voiceInputCard);
+        terminalOutput = findViewById(R.id.terminalOutput);
+        voicePanel = findViewById(R.id.voicePanel);
+        voiceStateText = findViewById(R.id.voiceStateText);
+        voiceTranscriptText = findViewById(R.id.voiceTranscriptText);
 
-        // Terminal text view inside terminal stage
-        terminalTextView = new TextView(this);
-        terminalTextView.setTextSize(currentFontSize);
-        terminalTextView.setTextColor(0xFFF8F8F2);
-        terminalTextView.setTypeface(android.graphics.Typeface.MONOSPACE);
-        terminalTextView.setText("UmolkTerm Ready. Select a host to connect.\n");
-        terminalStage.addView(terminalTextView);
+        terminalOutput.setTextSize(currentFontSize);
+        terminalOutput.setText("UmolkTerm v1.0 Ready. Select a host to connect.\n");
 
         // Header buttons
-        findViewById(R.id.btnToggleLeftDrawer).setOnClickListener(v -> 
+        findViewById(R.id.btnToggleSidebar).setOnClickListener(v -> 
             drawerLayout.openDrawer(GravityCompat.START));
-        findViewById(R.id.btnToggleAiDrawer).setOnClickListener(v -> 
+        findViewById(R.id.btnToggleAi).setOnClickListener(v -> 
             drawerLayout.openDrawer(GravityCompat.END));
         findViewById(R.id.btnSettings).setOnClickListener(v -> showSettingsDialog());
 
         // Left drawer hosts RecyclerView
-        recyclerHosts = findViewById(R.id.recyclerHosts);
-        recyclerHosts.setLayoutManager(new LinearLayoutManager(this));
+        rvHostsList = findViewById(R.id.rvHostsList);
+        rvHostsList.setLayoutManager(new LinearLayoutManager(this));
         hostAdapter = new HostAdapter(hostList, new HostAdapter.OnHostClickListener() {
             @Override
             public void onConnect(SshHost host) {
                 drawerLayout.closeDrawer(GravityCompat.START);
-                terminalTextView.append("\n[Connecting to " + host.getLabel() + " (" + host.getHost() + ")...]\n");
+                terminalOutput.append("\n[Connecting to " + host.getLabel() + " (" + host.getHost() + ")...]\n");
                 sshManager.connect(host, new SshTerminalManager.SshListener() {
                     @Override
                     public void onConnected() {
-                        runOnUiThread(() -> terminalTextView.append("[SSH Connected]\n"));
+                        runOnUiThread(() -> terminalOutput.append("[SSH Connected]\n"));
                     }
 
                     @Override
                     public void onDataReceived(String data) {
-                        runOnUiThread(() -> terminalTextView.append(data));
+                        runOnUiThread(() -> terminalOutput.append(data));
                     }
 
                     @Override
                     public void onError(String error) {
-                        runOnUiThread(() -> terminalTextView.append("\n[" + error + "]\n"));
+                        runOnUiThread(() -> terminalOutput.append("\n[" + error + "]\n"));
                     }
 
                     @Override
                     public void onDisconnected() {
-                        runOnUiThread(() -> terminalTextView.append("\n[Disconnected]\n"));
+                        runOnUiThread(() -> terminalOutput.append("\n[Disconnected]\n"));
                     }
                 });
             }
@@ -127,20 +126,21 @@ public class MainActivity extends AppCompatActivity {
                 hostAdapter.notifyDataSetChanged();
             }
         });
-        recyclerHosts.setAdapter(hostAdapter);
+        rvHostsList.setAdapter(hostAdapter);
 
         findViewById(R.id.btnAddHost).setOnClickListener(v -> showEditHostDialog(null));
-        findViewById(R.id.btnShowSnippets).setOnClickListener(v -> showSnippetsDialog());
+        findViewById(R.id.btnSidebarSnippets).setOnClickListener(v -> showSnippetsDialog());
     }
 
     private void setupKeyBar() {
         // Paste and Run
-        findViewById(R.id.keyPasteRun).setOnClickListener(v -> {
+        findViewById(R.id.btnKeyPasteRun).setOnClickListener(v -> {
             ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
             if (clipboard != null && clipboard.hasPrimaryClip() && clipboard.getPrimaryClip().getItemCount() > 0) {
                 CharSequence text = clipboard.getPrimaryClip().getItemAt(0).getText();
                 if (text != null && text.length() > 0) {
-                    Toast.makeText(this, "Executing: " + text, Toast.LENGTH_SHORT).show();
+                    terminalOutput.append("\n" + text + "\n");
+                    sshManager.sendData(text.toString() + "\n");
                 }
             } else {
                 Toast.makeText(this, "Clipboard is empty", Toast.LENGTH_SHORT).show();
@@ -148,18 +148,30 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // Voice Input
-        findViewById(R.id.keyVoice).setOnClickListener(v -> {
-            if (voiceInputCard.getVisibility() == View.VISIBLE) {
-                voiceInputCard.setVisibility(View.GONE);
+        findViewById(R.id.btnKeyMic).setOnClickListener(v -> {
+            if (voicePanel.getVisibility() == View.VISIBLE) {
+                voicePanel.setVisibility(View.GONE);
             } else {
-                voiceInputCard.setVisibility(View.VISIBLE);
-                voiceInterimText.setText("Listening...");
+                voicePanel.setVisibility(View.VISIBLE);
+                voiceStateText.setText("Listening...");
+                voiceTranscriptText.setText("");
             }
         });
-        findViewById(R.id.btnCancelVoice).setOnClickListener(v -> voiceInputCard.setVisibility(View.GONE));
 
         // Snippets button on key bar
-        findViewById(R.id.keySnippets).setOnClickListener(v -> showSnippetsDialog());
+        findViewById(R.id.btnKeySnippets).setOnClickListener(v -> showSnippetsDialog());
+
+        // Standard keys
+        findViewById(R.id.btnKeyEsc).setOnClickListener(v -> sshManager.sendData("\u001b"));
+        findViewById(R.id.btnKeyTab).setOnClickListener(v -> sshManager.sendData("\t"));
+        findViewById(R.id.btnKeyUp).setOnClickListener(v -> sshManager.sendData("\u001b[A"));
+        findViewById(R.id.btnKeyDown).setOnClickListener(v -> sshManager.sendData("\u001b[B"));
+        findViewById(R.id.btnKeyLeft).setOnClickListener(v -> sshManager.sendData("\u001b[D"));
+        findViewById(R.id.btnKeyRight).setOnClickListener(v -> sshManager.sendData("\u001b[C"));
+        findViewById(R.id.btnKeyPipe).setOnClickListener(v -> sshManager.sendData("|"));
+        findViewById(R.id.btnKeyTilde).setOnClickListener(v -> sshManager.sendData("~"));
+        findViewById(R.id.btnKeySlash).setOnClickListener(v -> sshManager.sendData("/"));
+        findViewById(R.id.btnKeyMinus).setOnClickListener(v -> sshManager.sendData("-"));
     }
 
     private void setupSampleData() {
@@ -174,12 +186,12 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupDrawers() {
         // AI Copilot Drawer actions
-        EditText editAiPrompt = findViewById(R.id.editAiPrompt);
-        findViewById(R.id.btnSendAiPrompt).setOnClickListener(v -> {
-            String prompt = editAiPrompt.getText().toString().trim();
+        EditText etAiInput = findViewById(R.id.etAiInput);
+        findViewById(R.id.btnSendAi).setOnClickListener(v -> {
+            String prompt = etAiInput.getText().toString().trim();
             if (!prompt.isEmpty()) {
                 Toast.makeText(this, "AI analyzing: " + prompt, Toast.LENGTH_SHORT).show();
-                editAiPrompt.setText("");
+                etAiInput.setText("");
             }
         });
     }
@@ -188,23 +200,20 @@ public class MainActivity extends AppCompatActivity {
         Dialog dialog = new Dialog(this);
         dialog.setContentView(R.layout.dialog_settings);
 
-        SeekBar seekFontSize = dialog.findViewById(R.id.seekFontSize);
-        TextView tvFontSizeVal = dialog.findViewById(R.id.tvFontSizeVal);
-        seekFontSize.setProgress(currentFontSize);
-        tvFontSizeVal.setText(currentFontSize + " pt");
+        SeekBar sbFontSize = dialog.findViewById(R.id.sbFontSize);
+        sbFontSize.setProgress(currentFontSize);
 
-        seekFontSize.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        sbFontSize.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 int size = Math.max(8, progress);
-                tvFontSizeVal.setText(size + " pt");
                 currentFontSize = size;
+                terminalOutput.setTextSize(currentFontSize);
             }
             @Override public void onStartTrackingTouch(SeekBar seekBar) {}
             @Override public void onStopTrackingTouch(SeekBar seekBar) {}
         });
 
-        dialog.findViewById(R.id.btnCloseSettings).setOnClickListener(v -> dialog.dismiss());
         dialog.show();
     }
 
@@ -265,8 +274,20 @@ public class MainActivity extends AppCompatActivity {
     private void showSnippetsDialog() {
         Dialog dialog = new Dialog(this);
         dialog.setContentView(R.layout.dialog_edit_snippet);
-        // Additional snippet dialog actions
         dialog.findViewById(R.id.btnCancelSnippet).setOnClickListener(v -> dialog.dismiss());
+        dialog.findViewById(R.id.btnSaveSnippet).setOnClickListener(v -> {
+            EditText etTitle = dialog.findViewById(R.id.editSnippetTitle);
+            EditText etGroup = dialog.findViewById(R.id.editSnippetGroup);
+            EditText etCmd = dialog.findViewById(R.id.editSnippetCommand);
+            String title = etTitle.getText().toString().trim();
+            String group = etGroup.getText().toString().trim();
+            String cmd = etCmd.getText().toString().trim();
+            if (!title.isEmpty() && !cmd.isEmpty()) {
+                snippetList.add(new Snippet(String.valueOf(System.currentTimeMillis()), title, cmd, group));
+                Toast.makeText(this, "Snippet saved", Toast.LENGTH_SHORT).show();
+            }
+            dialog.dismiss();
+        });
         dialog.show();
     }
 }
