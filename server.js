@@ -85,8 +85,12 @@ function hashPassword(pw, salt) {
 }
 
 function setPassword(pw) {
+  let existing = {};
+  try { existing = JSON.parse(fs.readFileSync(AUTH_FILE, 'utf8')); } catch (e) {}
+  // Той самий пароль — нічого не переписуємо (інакше кожен рестарт скидав би 2FA)
+  if (existing.salt && existing.hash && hashPassword(pw, existing.salt) === existing.hash) return;
   const salt = crypto.randomBytes(16).toString('hex');
-  writeSecure(AUTH_FILE, JSON.stringify({ salt, hash: hashPassword(pw, salt) }));
+  writeSecure(AUTH_FILE, JSON.stringify({ ...existing, salt, hash: hashPassword(pw, salt) }));
 }
 
 if (process.env.UMOLK_PASSWORD) {

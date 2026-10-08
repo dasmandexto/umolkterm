@@ -11,12 +11,20 @@ if [ -z "$UMOLK_HOSTS" ] && [ ! -f data/tls/cert.pem ]; then
   [ -n "$PUB" ] && export UMOLK_HOSTS="$PUB"
 fi
 
-# Запуск локального Whisper-воркера у фоні
-echo "Запуск локального Whisper воркера..."
-whisper/venv/bin/python whisper/worker.py &
-WHISPER_PID=$!
+# Завантажуємо .env (UMOLK_PASSWORD, UMOLK_WHISPER_MODEL, ключі API тощо), якщо є
+if [ -f .env ]; then
+  set -a; . ./.env; set +a
+fi
 
-# Вбиваємо воркер при завершенні скрипта
-trap "kill $WHISPER_PID" EXIT
-
-exec node server.js
+# Локальний Whisper-воркер — лише якщо встановлено (install.sh без --no-whisper)
+if [ -x whisper/venv/bin/python ]; then
+  echo "Запуск локального Whisper воркера..."
+  whisper/venv/bin/python whisper/worker.py &
+  WHISPER_PID=$!
+  # Вбиваємо воркер при завершенні скрипта
+  trap 'kill $WHISPER_PID 2>/dev/null' EXIT
+  node server.js
+else
+  echo "Whisper не встановлено — голос працюватиме через браузер або OpenAI."
+  exec node server.js
+fi

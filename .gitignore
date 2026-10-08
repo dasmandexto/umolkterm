@@ -4,3 +4,13 @@ whisper/venv/
 .env
 __pycache__/
 whisper/models/
+# Android build outputs
+android/.gradle/
+android/app/build/
+android/build/
+android/local.properties
+*.apk
+*.idsig
+*.keystore
+whisper.log
+dist/
