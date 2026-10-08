@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Dracula Theme Palette -->
+    <color name="dracula_bg">#282A36</color>
+    <color name="dracula_bg_darker">#1E1F29</color>
+    <color name="dracula_current_line">#44475A</color>
+    <color name="dracula_fg">#F8F8F2</color>
+    <color name="dracula_comment">#6272A4</color>
+    <color name="dracula_cyan">#8BE9FD</color>
+    <color name="dracula_green">#50FA7B</color>
+    <color name="dracula_orange">#FFB86C</color>
+    <color name="dracula_pink">#FF79C6</color>
+    <color name="dracula_purple">#BD93F9</color>
+    <color name="dracula_red">#FF5555</color>
+    <color name="dracula_yellow">#F1FA8C</color>
+
+    <!-- Translucent overlays -->
+    <color name="dracula_card_bg">#99282A36</color>
+    <color name="dracula_border">#1AFFFFFF</color>
+    <color name="dracula_green_tint">#2650FA7B</color>
+    <color name="dracula_purple_tint">#33BD93F9</color>
+    <color name="dracula_cyan_tint">#268BE9FD</color>
+</resources>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@color/dracula_bg_darker"
+    android:padding="12dp"
+    android:layout_marginBottom="8dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/tvKeyName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="id_rsa_prod"
+            android:textColor="@color/dracula_fg"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvKeyType"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ED25519"
+            android:background="@color/dracula_current_line"
+            android:textColor="@color/dracula_cyan"
+            android:textSize="10sp"
+            android:paddingHorizontal="6dp"
+            android:paddingVertical="2dp"
+            android:layout_marginEnd="8dp" />
+
+        <Button
+            android:id="@+id/btnDeleteKey"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:text="✕"
+            android:backgroundTint="@color/dracula_red"
+            android:textColor="@color/dracula_bg"
+            android:textSize="10sp"
+            android:padding="0dp" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvKeyFingerprint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="SHA256:7vQx9... (Passphrase: No)"
+        android:textColor="@color/dracula_comment"
+        android:textSize="11sp"
+        android:fontFamily="monospace"
+        android:layout_marginTop="4dp" />
+
+</LinearLayout>

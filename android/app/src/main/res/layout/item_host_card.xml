@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/cardRoot"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@color/dracula_current_line"
+    android:padding="8dp"
+    android:layout_marginBottom="6dp">
+
+    <!-- Row 1: Status Dot, Host Name, Connect Button -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <View
+            android:id="@+id/viewColorDot"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:background="@color/dracula_purple"
+            android:layout_marginEnd="6dp" />
+
+        <TextView
+            android:id="@+id/tvHostName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="debian@54.224.238.91"
+            android:textColor="@color/dracula_fg"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btnConnect"
+            android:layout_width="wrap_content"
+            android:layout_height="28dp"
+            android:text="🔌 Connect"
+            android:textSize="10sp"
+            android:textColor="@color/dracula_bg"
+            android:background="@color/dracula_green"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp" />
+    </LinearLayout>
+
+    <!-- Row 2: Endpoint info (user@host:port) -->
+    <TextView
+        android:id="@+id/tvHostEndpoint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="root@54.224.238.91:22"
+        android:textColor="@color/dracula_comment"
+        android:textSize="10sp"
+        android:typeface="monospace"
+        android:layout_marginTop="2dp" />
+
+    <!-- Row 3: Badges & Action Buttons (Test, Edit, Delete) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="4dp">
+
+        <TextView
+            android:id="@+id/tvBadgeGroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Servers"
+            android:textSize="9sp"
+            android:textColor="@color/dracula_comment"
+            android:background="@color/dracula_bg_darker"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp"
+            android:paddingTop="1dp"
+            android:paddingBottom="1dp"
+            android:layout_marginEnd="4dp" />
+
+        <TextView
+            android:id="@+id/tvBadgeAuth"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🔑 Key"
+            android:textSize="9sp"
+            android:textColor="@color/dracula_green"
+            android:background="@color/dracula_green_tint"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp"
+            android:paddingTop="1dp"
+            android:paddingBottom="1dp" />
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <ImageButton
+            android:id="@+id/btnTestHost"
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:src="@android:drawable/ic_menu_agenda"
+            android:tint="@color/dracula_cyan"
+            android:background="?attr/selectableItemBackgroundBorderless" />
+
+        <ImageButton
+            android:id="@+id/btnEditHost"
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:src="@android:drawable/ic_menu_edit"
+            android:tint="@color/dracula_purple"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:layout_marginStart="4dp" />
+
+        <ImageButton
+            android:id="@+id/btnDeleteHost"
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:src="@android:drawable/ic_menu_delete"
+            android:tint="@color/dracula_red"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:layout_marginStart="4dp" />
+    </LinearLayout>
+</LinearLayout>
